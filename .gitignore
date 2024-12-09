@@ -1,0 +1,5 @@
+# Rproject defaults
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
