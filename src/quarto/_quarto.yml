@@ -1,0 +1,11 @@
+project:
+  type: website
+  output-dir: "../../reports/hpc-containers-crash-course"
+  
+website:
+  title: "HPC Containers Crash Course"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - slides/20241216-slides.qmd
