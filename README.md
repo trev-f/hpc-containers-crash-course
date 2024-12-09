@@ -4,6 +4,17 @@ Web page for a 1-2 hour mini workshop will provide a hands-on crash course on ut
 
 ![Check out our flyer](assets/flyer.png)
 
+## Workshop website
+
+The materials for this workshop are hosted on the GitHub Pages site attached to this repository -- <https://trev-f.github.io/hpc-containers-crash-course/>.
+This repository consists of workshop information and the source files used to build the site.
+
+### Site links
+
+* [Mini workshop home page](https://trev-f.github.io/hpc-containers-crash-course/)
+
+* [Current (December 2024) slides](https://trev-f.github.io/hpc-containers-crash-course/slides/20241216-slides.html#/title-slide)
+
 ## Zoom
 
 > [!NOTE]  
