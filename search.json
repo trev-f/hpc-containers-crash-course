@@ -1,14 +1,14 @@
 [
   {
-    "objectID": "document.html#getting-up",
-    "href": "document.html#getting-up",
+    "objectID": "slides/20241216-slides.html#getting-up",
+    "href": "slides/20241216-slides.html#getting-up",
     "title": "Habits",
     "section": "Getting up",
     "text": "Getting up\n\nTurn off alarm\nGet out of bed"
   },
   {
-    "objectID": "document.html#going-to-sleep",
-    "href": "document.html#going-to-sleep",
+    "objectID": "slides/20241216-slides.html#going-to-sleep",
+    "href": "slides/20241216-slides.html#going-to-sleep",
     "title": "Habits",
     "section": "Going to sleep",
     "text": "Going to sleep\n\nGet in bed\nCount sheep"
@@ -18,6 +18,13 @@
     "href": "index.html",
     "title": "HPC Containers Crash Course",
     "section": "",
-    "text": "HPC Containers Crash Course"
+    "text": "This is the home page for a 1-2 hour mini workshop that will provide a hands-on crash course on utilizing Apptainer to run software containers on UTK’s ISAAC-NG HPC.\n\n\nDec. 16, 2024 – Slides"
+  },
+  {
+    "objectID": "index.html#current-materials",
+    "href": "index.html#current-materials",
+    "title": "HPC Containers Crash Course",
+    "section": "",
+    "text": "Dec. 16, 2024 – Slides"
   }
 ]
