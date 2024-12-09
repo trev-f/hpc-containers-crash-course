@@ -8,4 +8,5 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - slides/20241216-slides.qmd
+      - href: slides/20241216-slides.qmd
+        text: 2024-12-16 -- Containers HPC Slides
