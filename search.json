@@ -12,5 +12,12 @@
     "title": "Habits",
     "section": "Going to sleep",
     "text": "Going to sleep\n\nGet in bed\nCount sheep"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "HPC Containers Crash Course",
+    "section": "",
+    "text": "HPC Containers Crash Course"
   }
 ]
