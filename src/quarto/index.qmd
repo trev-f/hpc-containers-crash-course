@@ -1,0 +1,7 @@
+# HPC Containers Crash Course
+
+This is the home page for a 1-2 hour mini workshop that will provide a hands-on crash course on utilizing Apptainer to run software containers on UTK's ISAAC-NG HPC.
+
+## Current materials
+
+[Dec. 16, 2024 -- Slides](slides/20241216-slides.qmd)

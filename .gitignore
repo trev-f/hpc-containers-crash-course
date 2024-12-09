@@ -1,0 +1,8 @@
+# Rproject defaults
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Don't check rendered documents into version control
+/reports/

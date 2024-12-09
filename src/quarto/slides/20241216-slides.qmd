@@ -1,0 +1,17 @@
+---
+title: "Using Containerized Software on HPC for Bioinformatics"
+date: 2024-12-16
+author: "Trevor F. Freeman"
+institute: "UTIA Genomics Center"
+format: revealjs
+---
+
+## Getting up
+
+- Turn off alarm
+- Get out of bed
+
+## Going to sleep
+
+- Get in bed
+- Count sheep
