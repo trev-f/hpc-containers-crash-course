@@ -21,6 +21,13 @@
     "text": "Start interactive compute session\nInteractive compute session allows us to work directly on a compute node.\n\n\nTerminal\n\nsrun \\\n  --account ACF-UTK0011 \\\n  --partition short \\\n  --qos short \\\n  --cpus-per-task 1 \\\n  --time 02:00:00 \\\n  --pty \\\n  /bin/bash -i"
   },
   {
+    "objectID": "slides/20241216-slides.html#toy-example-description",
+    "href": "slides/20241216-slides.html#toy-example-description",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Toy example description",
+    "text": "Toy example description\n\nPerform routine exploratory analysis of genomic alignments:\n\nHow many alignment records?\nWhat do stats look like?\nCan we tell what reference was used?\n\nAlignments in BAM format with accompanying index\nBAMs are great candidate for exploring containerized software:\n\nTypically require specialized software to parse\nCommon format produced and used by many software tools"
+  },
+  {
     "objectID": "slides/20241216-slides.html#fetch-toy-data",
     "href": "slides/20241216-slides.html#fetch-toy-data",
     "title": "Using Containerized Software on HPC for Bioinformatics",
