@@ -21,6 +21,13 @@
     "text": "Fetch toy data\n\nMake data directory\nDownload toy data files into directory\n\n\n\nTerminal\n\n# set variable for directory to store alignments in\nalignments_dir=\"data/alignments\"\n# create alignments directory\nmkdir -p \"${alignments_dir}\"\n\n# download BAM and index\nwget \\\n  -P \"${alignments_dir}\" \\\n  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam\nwget \\\n  -P \"${alignments_dir}\" \\\n  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam.bai"
   },
   {
+    "objectID": "slides/20241216-slides.html#start-interactive-compute-session",
+    "href": "slides/20241216-slides.html#start-interactive-compute-session",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Start interactive compute session",
+    "text": "Start interactive compute session\nInteractive compute session allows us to work directly on a compute node.\n\n\nTerminal\n\nsrun \\\n  --account ACF-UTK0011 \\\n  --partition short \\\n  --qos short \\\n  --cpus-per-task 1 \\\n  --pty \\\n  /bin/bash -i"
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "HPC Containers Crash Course",
