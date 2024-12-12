@@ -25,7 +25,7 @@
     "href": "slides/20241216-slides.html#start-interactive-compute-session",
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "Start interactive compute session",
-    "text": "Start interactive compute session\nInteractive compute session allows us to work directly on a compute node.\n\n\nTerminal\n\nsrun \\\n  --account ACF-UTK0011 \\\n  --partition short \\\n  --qos short \\\n  --cpus-per-task 1 \\\n  --pty \\\n  /bin/bash -i"
+    "text": "Start interactive compute session\nInteractive compute session allows us to work directly on a compute node.\n\n\nTerminal\n\nsrun \\\n  --account ACF-UTK0011 \\\n  --partition short \\\n  --qos short \\\n  --cpus-per-task 1 \\\n  --time 02:00:00 \\\n  --pty \\\n  /bin/bash -i"
   },
   {
     "objectID": "index.html",
