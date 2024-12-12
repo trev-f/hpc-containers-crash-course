@@ -1,10 +1,17 @@
 [
   {
+    "objectID": "slides/20241216-slides.html#setup-workshop-project-directory",
+    "href": "slides/20241216-slides.html#setup-workshop-project-directory",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Setup workshop project directory",
+    "text": "Setup workshop project directory\n\nConnect to terminal session on ISAAC-NG login node\nCreate project directory in scratch\nNavigate into project directory\n\n\n\nTerminal\n\n# set variable for project directory\nproj_dir=\"${SCRATCHDIR}/hpc-containers-crash-course\"\n\n# create the project directory and navigate into it\nmkdir -p \"${proj_dir}\"\ncd \"${proj_dir}\"\n\n::: {.callout-note Workshop project directory} Assume that all commands in this mini workshop are run from the top level of this project directory unless explicitly stated otherwise. :::"
+  },
+  {
     "objectID": "slides/20241216-slides.html#fetch-toy-data",
     "href": "slides/20241216-slides.html#fetch-toy-data",
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "Fetch toy data",
-    "text": "Fetch toy data\n\nMake data directory\nDownload toy data files into directory\n\n\n\nTerminal\n\n# set directory to store alignments in\nalignments_dir=\"data/alignments\"\n# create alignments directory\nmkdir -p \"${alignments_dir}\"\n\n# download BAM and index\nwget \\\n  -P \"${alignments_dir}\" \\\n  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam\nwget \\\n  -P \"${alignments_dir}\" \\\n  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam.bai"
+    "text": "Fetch toy data\n\nMake data directory\nDownload toy data files into directory\n\n\n\nTerminal\n\n# set variable for directory to store alignments in\nalignments_dir=\"data/alignments\"\n# create alignments directory\nmkdir -p \"${alignments_dir}\"\n\n# download BAM and index\nwget \\\n  -P \"${alignments_dir}\" \\\n  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam\nwget \\\n  -P \"${alignments_dir}\" \\\n  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam.bai"
   },
   {
     "objectID": "index.html",
