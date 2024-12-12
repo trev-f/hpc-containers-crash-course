@@ -6,12 +6,81 @@ institute: "UTIA Genomics Center"
 format: revealjs
 ---
 
-## Getting up
+# Setup workshop environment
 
-- Turn off alarm
-- Get out of bed
+## Login to ISAAC-NG
 
-## Going to sleep
+Connect to terminal session on ISAAC-NG login node
 
-- Get in bed
-- Count sheep
+My preferred: `ssh` into `login.isaac.utk.edu`
+
+```{.bash filename="Terminal"}
+ssh <netid>@login.isaac.utk.edu
+```
+
+## Setup workshop project directory
+
+1. Connect to terminal session on ISAAC-NG login node
+2. Create project directory in scratch
+3. Navigate into project directory
+
+```{.bash filename="Terminal"}
+# set variable for project directory
+proj_dir="${SCRATCHDIR}/hpc-containers-crash-course"
+
+# create the project directory and navigate into it
+mkdir -p "${proj_dir}"
+cd "${proj_dir}"
+```
+
+::: {.callout-note title="Workshop project directory"}
+Assume that all commands in this mini workshop are run from the top level of this project directory unless explicitly stated otherwise.
+:::
+
+## Start interactive compute session
+
+Interactive compute session allows us to work directly on a compute node.
+
+```{.bash filename="Terminal"}
+srun \
+  --account ACF-UTK0011 \
+  --partition short \
+  --qos short \
+  --cpus-per-task 1 \
+  --time 02:00:00 \
+  --pty \
+  /bin/bash -i
+```
+
+# Setup toy example
+
+## Toy example description
+
+* Perform routine exploratory analysis of genomic alignments:
+  * How many alignment records?
+  * What do stats look like?
+  * Can we tell what reference was used?
+* Alignments in BAM format with accompanying index
+* BAMs are great candidate for exploring containerized software:
+  * Typically require specialized software to parse
+  * Common format produced and used by many software tools
+
+## Fetch toy data
+
+1. Make data directory
+2. Download toy data files into directory
+
+```{.bash filename="Terminal"}
+# set variable for directory to store alignments in
+alignments_dir="data/alignments"
+# create alignments directory
+mkdir -p "${alignments_dir}"
+
+# download BAM and index
+wget \
+  -P "${alignments_dir}" \
+  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam
+wget \
+  -P "${alignments_dir}" \
+  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam.bai
+```
