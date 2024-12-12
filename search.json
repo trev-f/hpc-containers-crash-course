@@ -1,5 +1,12 @@
 [
   {
+    "objectID": "slides/20241216-slides.html#login-on-isaac-ng",
+    "href": "slides/20241216-slides.html#login-on-isaac-ng",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Login on ISAAC-NG",
+    "text": "Login on ISAAC-NG\nConnect to terminal session on ISAAC-NG login node\nMy preferred: ssh into login.isaac.utk.edu\n\n\nTerminal\n\nssh &lt;netid&gt;@login.isaac.utk.edu"
+  },
+  {
     "objectID": "slides/20241216-slides.html#setup-workshop-project-directory",
     "href": "slides/20241216-slides.html#setup-workshop-project-directory",
     "title": "Using Containerized Software on HPC for Bioinformatics",
