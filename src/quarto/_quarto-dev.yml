@@ -1,0 +1,7 @@
+project:
+  type: website
+  output-dir: "../../exploratory/hpc-containers-crash-course"
+
+format:
+  revealjs:
+    embed-resources: true

@@ -20,9 +20,8 @@ ssh <netid>@login.isaac.utk.edu
 
 ## Setup workshop project directory
 
-1. Connect to terminal session on ISAAC-NG login node
-2. Create project directory in scratch
-3. Navigate into project directory
+1. Create project directory in scratch
+2. Navigate into project directory
 
 ```{.bash filename="Terminal"}
 # set variable for project directory
@@ -54,13 +53,19 @@ srun \
 
 # Setup toy example
 
-## Toy example description
+## Toy example description {.smaller}
 
 * Perform routine exploratory analysis of genomic alignments:
   * How many alignment records?
   * What do stats look like?
   * Can we tell what reference was used?
-* Alignments in BAM format with accompanying index
+
+. . .
+
+* Data files: Alignments in BAM format with accompanying index
+
+. . .
+
 * BAMs are great candidate for exploring containerized software:
   * Typically require specialized software to parse
   * Common format produced and used by many software tools
@@ -84,3 +89,234 @@ wget \
   -P "${alignments_dir}" \
   https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam.bai
 ```
+
+# Run software in Apptainer containers
+
+## Get started with Apptainer
+
+Run Apptainer
+
+```{.bash filename="Terminal"}
+apptainer
+```
+
+Get help with Apptainer and subcommands
+
+```{.bash filename="Terminal"}
+# get help with Apptainer
+apptainer help
+
+# get help with Apptainer subcommands
+apptainer help pull
+# same as -h/--help flag
+apptainer pull -h
+apptainer pull --help
+```
+
+## Terminology note: Apptainer is Singularity
+
+Both Apptainer and Singularity commands show same version
+
+```{.bash filename="Terminal"}
+apptainer --version
+singularity --version
+```
+
+Running `singularity` launches Apptainer
+
+```{.bash filename="Terminal"}
+# find executables for Apptainer and Singularity
+which apptainer
+which singularity
+
+# show more info about those executables
+ls -lh /usr/bin/apptainer /usr/bin/singularity
+```
+
+[Singularity Compatibility](https://apptainer.org/docs/user/1.2/singularity_compatibility.html) in Apptainer docs
+
+## `apptainer pull` -- Get Apptainer image from remote URI
+
+View help docs
+
+```{.bash filename="Terminal"}
+apptainer help pull
+```
+
+Basic usage -- `apptainer pull [output file] <URI>`
+
+. . .
+
+Pull Samtools image -- We'll use Samtools to analyze BAM file
+
+```{.bash filename="Terminal"}
+# set variable for Samtools image URI
+samtools_img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+
+# pull the apptainer image
+apptainer pull samtools_1-21.sif "${samtools_img_uri}"
+```
+
+## Three ways to interact with an image {.smaller}
+
+1. `apptainer shell <image>` -- Spawn interactive shell in container
+  * Useful for interactively exploring a container
+  * Not suitable for scripting
+
+. . .
+
+2. `apptainer run <image> [arguments]` -- Run the container runscript
+  * Simple way to run software in container
+  * Relies on the way the runscript is specified by the container's creator
+  * May not accept arguments in expected manner
+
+. . .
+
+3. `apptainer exec <image> <command>` -- Execute custom command in container
+  * Most reliable way to run software in container
+  * Generally works as expected
+  * Recommended for scripting
+
+## `apptainer shell` -- Basics {.smaller}
+
+Enter interactive shell session in container
+
+```{.bash filename="Terminal"}
+apptainer shell samtools_1-21.sif
+```
+
+. . .
+
+How to tell you're in container shell session:
+
+1. Command prompt says "Singularity" -- Unreliable
+2. `echo "${APPTAINER_NAME}"` prints name of container
+
+. . .
+
+Exit interactive shell session and close container
+
+```{.bash filename="Apptainer shell"}
+exit
+```
+
+May also be able to use {{< kbd Ctrl-d >}}
+
+## `apptainer shell` -- Software in the Samtools container {.smaller}
+
+Enter interactive shell session in container
+
+```{.bash filename="Terminal"}
+apptainer shell samtools_1-21.sif
+```
+
+. . .
+
+Samtools is available inside the container
+
+```{.bash filename="Apptainer shell"}
+# show samtools help
+samtools version
+# show information about the samtools command
+type samtools
+```
+
+. . .
+
+Software available on the ISAAC-NG host OS may not be available in the container
+
+```{.bash filename="Apptainer shell"}
+# commands that aren't available in the container will fail
+apptainer --version
+module avail
+```
+
+## `apptainer shell` -- Files in the Samtools container
+
+Directly access files in project directory
+
+```{.bash filename="Apptainer shell"}
+# print BAM file header
+samtools head data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+. . .
+
+Thanks to the ISAAC-NG sys admins, all of your favorite ISAAC-NG directories are accessible inside of containers right where we expect them to be!
+
+```{.bash filename="Apptainer shell"}
+# look into your home and scratch directories
+ls "${HOME}"
+ls "${SCRATCHDIR}"
+
+# look into the list of project directories
+ls /lustre/isaac/proj
+```
+
+## `apptainer run` -- Relies on runscript {.smaller}
+
+View runscript built into container -- May be hard to parse
+
+```{.bash filename="Terminal"}
+# print the runscript
+apptainer inspect --runscript samtools_1-21.sif
+```
+
+. . .
+
+Run the Samtools container
+
+```{.bash filename="Terminal"}
+# run the samtools container runscript
+apptainer run samtools_1-21.sif
+```
+
+Run Samtools in the Samtools container
+
+```{.bash filename="Terminal"}
+# run samtools in the samtools container runscript by supplying command line args
+apptainer run samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+. . .
+
+::: {.callout-note title="apptainer run"}
+Running this command is completely dependent on how the runscript is setup
+:::
+
+## `apptainer exec` -- Execute samtools directly in container
+
+```{.bash filename="Terminal"}
+# print BAM file header with command directly executed in container
+apptainer exec samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+. . .
+
+::: {.callout-note title="apptainer exec"}
+Running this command is completely independent from how the container is setup.
+
+If 1) the software is available in the container and 2) the file can be accessed in the container, the command should run
+:::
+
+## Run Apptainer conclusions -- Useful commands
+
+* Get Apptainer image from remote URI -- `apptainer pull`
+
+. . .
+
+* Interact with Apptainer image with one of three commands
+  * Explore container -- `apptainer shell`
+  * Execute command inside container -- `apptainer exec`
+  * Run specific script that you know has been set as runscript -- `apptainer run`
+
+## Run Apptainer conclusions -- Software and files
+
+* You shouldn't need to bind any files into Apptainer containers on ISAAC-NG for normal use
+  * Sys admins took care of this for you!
+  * Caveat: Some (rare) containers may expect files in specific locations. Look into [bind paths and mounts](https://apptainer.org/docs/user/1.2/bind_paths_and_mounts.html)
+
+. . .
+
+* Containers allow you to run the software that is available inside the container
+* You cannot run software available on the host OS inside the container
