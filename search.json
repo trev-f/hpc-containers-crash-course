@@ -11,7 +11,7 @@
     "href": "slides/20241216-slides.html#setup-workshop-project-directory",
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "Setup workshop project directory",
-    "text": "Setup workshop project directory\n\nConnect to terminal session on ISAAC-NG login node\nCreate project directory in scratch\nNavigate into project directory\n\n\n\nTerminal\n\n# set variable for project directory\nproj_dir=\"${SCRATCHDIR}/hpc-containers-crash-course\"\n\n# create the project directory and navigate into it\nmkdir -p \"${proj_dir}\"\ncd \"${proj_dir}\"\n\n\n\n\n\n\n\n\nWorkshop project directory\n\n\nAssume that all commands in this mini workshop are run from the top level of this project directory unless explicitly stated otherwise."
+    "text": "Setup workshop project directory\n\nCreate project directory in scratch\nNavigate into project directory\n\n\n\nTerminal\n\n# set variable for project directory\nproj_dir=\"${SCRATCHDIR}/hpc-containers-crash-course\"\n\n# create the project directory and navigate into it\nmkdir -p \"${proj_dir}\"\ncd \"${proj_dir}\"\n\n\n\n\n\n\n\n\nWorkshop project directory\n\n\nAssume that all commands in this mini workshop are run from the top level of this project directory unless explicitly stated otherwise."
   },
   {
     "objectID": "slides/20241216-slides.html#start-interactive-compute-session",
@@ -25,7 +25,7 @@
     "href": "slides/20241216-slides.html#toy-example-description",
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "Toy example description",
-    "text": "Toy example description\n\nPerform routine exploratory analysis of genomic alignments:\n\nHow many alignment records?\nWhat do stats look like?\nCan we tell what reference was used?\n\nAlignments in BAM format with accompanying index\nBAMs are great candidate for exploring containerized software:\n\nTypically require specialized software to parse\nCommon format produced and used by many software tools"
+    "text": "Toy example description\n\nPerform routine exploratory analysis of genomic alignments:\n\nHow many alignment records?\nWhat do stats look like?\nCan we tell what reference was used?\n\n\n\n\nData files: Alignments in BAM format with accompanying index\n\n\n\n\nBAMs are great candidate for exploring containerized software:\n\nTypically require specialized software to parse\nCommon format produced and used by many software tools"
   },
   {
     "objectID": "slides/20241216-slides.html#fetch-toy-data",
@@ -33,6 +33,83 @@
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "Fetch toy data",
     "text": "Fetch toy data\n\nMake data directory\nDownload toy data files into directory\n\n\n\nTerminal\n\n# set variable for directory to store alignments in\nalignments_dir=\"data/alignments\"\n# create alignments directory\nmkdir -p \"${alignments_dir}\"\n\n# download BAM and index\nwget \\\n  -P \"${alignments_dir}\" \\\n  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam\nwget \\\n  -P \"${alignments_dir}\" \\\n  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam.bai"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#get-started-with-apptainer",
+    "href": "slides/20241216-slides.html#get-started-with-apptainer",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Get started with Apptainer",
+    "text": "Get started with Apptainer\nRun Apptainer\n\n\nTerminal\n\napptainer\n\nGet help with Apptainer and subcommands\n\n\nTerminal\n\n# get help with Apptainer\napptainer help\n\n# get help with Apptainer subcommands\napptainer help pull\n# same as -h/--help flag\napptainer pull -h\napptainer pull --help"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#terminology-note-apptainer-is-singularity",
+    "href": "slides/20241216-slides.html#terminology-note-apptainer-is-singularity",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Terminology note: Apptainer is Singularity",
+    "text": "Terminology note: Apptainer is Singularity\nBoth Apptainer and Singularity commands show same version\n\n\nTerminal\n\napptainer --version\nsingularity --version\n\nRunning singularity launches Apptainer\n\n\nTerminal\n\n# find executables for Apptainer and Singularity\nwhich apptainer\nwhich singularity\n\n# show more info about those executables\nls -lh /usr/bin/apptainer /usr/bin/singularity\n\nSingularity Compatibility in Apptainer docs"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-pull-get-apptainer-image-from-remote-uri",
+    "href": "slides/20241216-slides.html#apptainer-pull-get-apptainer-image-from-remote-uri",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "apptainer pull – Get Apptainer image from remote URI",
+    "text": "apptainer pull – Get Apptainer image from remote URI\nView help docs\n\n\nTerminal\n\napptainer help pull\n\nBasic usage – apptainer pull [output file] &lt;URI&gt;\n\nPull Samtools image – We’ll use Samtools to analyze BAM file\n\n\nTerminal\n\n# set variable for Samtools image URI\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n\n# pull the apptainer image\napptainer pull samtools_1-21.sif \"${samtools_img_uri}\""
+  },
+  {
+    "objectID": "slides/20241216-slides.html#three-ways-to-interact-with-an-image",
+    "href": "slides/20241216-slides.html#three-ways-to-interact-with-an-image",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Three ways to interact with an image",
+    "text": "Three ways to interact with an image\n\napptainer shell &lt;image&gt; – Spawn interactive shell in container\n\n\nUseful for interactively exploring a container\nNot suitable for scripting\n\n\n\napptainer run &lt;image&gt; [arguments] – Run the container runscript\n\n\nSimple way to run software in container\nRelies on the way the runscript is specified by the container’s creator\nMay not accept arguments in expected manner\n\n\n\n\napptainer exec &lt;image&gt; &lt;command&gt; – Execute custom command in container\n\n\nMost reliable way to run software in container\nGenerally works as expected\nRecommended for scripting"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-shell-basics",
+    "href": "slides/20241216-slides.html#apptainer-shell-basics",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "apptainer shell – Basics",
+    "text": "apptainer shell – Basics\nEnter interactive shell session in container\n\n\nTerminal\n\napptainer shell samtools_1-21.sif\n\n\nHow to tell you’re in container shell session:\n\nCommand prompt says “Singularity” – Unreliable\necho \"${APPTAINER_NAME}\" prints name of container\n\n\n\nExit interactive shell session and close container\n\n\nApptainer shell\n\nexit\n\nMay also be able to use Ctrl-dCtrl-d"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-shell-software-in-the-samtools-container",
+    "href": "slides/20241216-slides.html#apptainer-shell-software-in-the-samtools-container",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "apptainer shell – Software in the Samtools container",
+    "text": "apptainer shell – Software in the Samtools container\nEnter interactive shell session in container\n\n\nTerminal\n\napptainer shell samtools_1-21.sif\n\n\nSamtools is available inside the container\n\n\nApptainer shell\n\n# show samtools help\nsamtools version\n# show information about the samtools command\ntype samtools\n\n\n\nSoftware available on the ISAAC-NG host OS may not be available in the container\n\n\nApptainer shell\n\n# commands that aren't available in the container will fail\napptainer --version\nmodule avail"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-shell-files-in-the-samtools-container",
+    "href": "slides/20241216-slides.html#apptainer-shell-files-in-the-samtools-container",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "apptainer shell – Files in the Samtools container",
+    "text": "apptainer shell – Files in the Samtools container\nDirectly access files in project directory\n\n\nApptainer shell\n\n# print BAM file header\nsamtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nThanks to the ISAAC-NG sys admins, all of your favorite ISAAC-NG directories are accessible inside of containers right where we expect them to be!\n\n\nApptainer shell\n\n# look into your home and scratch directories\nls \"${HOME}\"\nls \"${SCRATCHDIR}\"\n\n# look into the list of project directories\nls /lustre/isaac/proj"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-run-relies-on-runscript",
+    "href": "slides/20241216-slides.html#apptainer-run-relies-on-runscript",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "apptainer run – Relies on runscript",
+    "text": "apptainer run – Relies on runscript\nView runscript built into container – May be hard to parse\n\n\nTerminal\n\n# print the runscript\napptainer inspect --runscript samtools_1-21.sif\n\n\nRun the Samtools container\n\n\nTerminal\n\n# run the samtools container runscript\napptainer run samtools_1-21.sif\n\nRun Samtools in the Samtools container\n\n\nTerminal\n\n# run samtools in the samtools container runscript by supplying command line args\napptainer run samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\n\napptainer run\n\n\nRunning this command is completely dependent on how the runscript is setup"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-exec-execute-samtools-directly-in-container",
+    "href": "slides/20241216-slides.html#apptainer-exec-execute-samtools-directly-in-container",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "apptainer exec – Execute samtools directly in container",
+    "text": "apptainer exec – Execute samtools directly in container\n\n\nTerminal\n\n# print BAM file header with command directly executed in container\napptainer exec samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\napptainer exec\n\n\nRunning this command is completely independent from how the container is setup.\nIf 1) the software is available in the container and 2) the file can be accessed in the container, the command should run"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#run-apptainer-conclusions-useful-commands",
+    "href": "slides/20241216-slides.html#run-apptainer-conclusions-useful-commands",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Run Apptainer conclusions – Useful commands",
+    "text": "Run Apptainer conclusions – Useful commands\n\nGet Apptainer image from remote URI – apptainer pull\n\n\n\nInteract with Apptainer image with one of three commands\n\nExplore container – apptainer shell\nExecute command inside container – apptainer exec\nRun specific script that you know has been set as runscript – apptainer run"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#run-apptainer-conclusions-software-and-files",
+    "href": "slides/20241216-slides.html#run-apptainer-conclusions-software-and-files",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Run Apptainer conclusions – Software and files",
+    "text": "Run Apptainer conclusions – Software and files\n\nYou shouldn’t need to bind any files into Apptainer containers on ISAAC-NG for normal use\n\nSys admins took care of this for you!\nCaveat: Some (rare) containers may expect files in specific locations. Look into bind paths and mounts\n\n\n\n\nContainers allow you to run the software that is available inside the container\nYou cannot run software available on the host OS inside the container"
   },
   {
     "objectID": "index.html",
