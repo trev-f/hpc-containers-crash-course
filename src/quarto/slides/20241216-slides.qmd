@@ -596,3 +596,22 @@ samtools view -c -q 10 "${input_bam}"
 echo "High quality BAM quick stats:"
 samtools view -h -q 10 "${input_bam}" | samtools flagstat -
 ```
+
+# Run Docker images with Apptainer
+
+## What is Docker?
+
+According to Docker:
+
+* "The Industry-Leading Container Runtime"
+* "Docker Engine is the industry’s de facto container runtime"
+
+. . .
+
+Until recently Docker was nearly synonymous with containerization
+
+Still immensely popular -- Borderline default containerization option
+
+. . .
+
+Terrible for HPCs -- Almost always completely unavailable
