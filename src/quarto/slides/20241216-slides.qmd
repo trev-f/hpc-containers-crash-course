@@ -320,3 +320,56 @@ If 1) the software is available in the container and 2) the file can be accessed
 
 * Containers allow you to run the software that is available inside the container
 * You cannot run software available on the host OS inside the container
+
+# Apptainer containers in use -- Analyze the toy example
+
+## Get quick alignments info
+
+Count records in BAM with Samtools -- `samtools view -c <input.bam>`
+
+```{.bash filename="Terminal"}
+apptainer exec samtools_1-21.sif samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+. . .
+
+Quick alignment stats -- `samtools flagstat <input.bam>`
+
+```{.bash filename="Terminal"}
+apptainer exec samtools_1-21.sif samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+## Get info about high quality alignments {.smaller}
+
+Count high quality records in BAM -- `samtools view -c -q 10 <input.bam>`
+
+Filters reads by minimum MAPQ (mapping quality)
+
+```{.bash filename="Terminal"}
+apptainer exec samtools_1-21.sif samtools view -c -q 10 data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+. . .
+
+Quick alignment stats of filtered BAM file -- `samtools view -h -q 10 <input.bam> | samtools flagstat -`
+
+```{.bash filename="Terminal"}
+apptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | samtools flagstat -
+```
+
+. . .
+
+::: {.callout-important title="Pipes in Apptainer"}
+Apptainer containers work with pipes and redirects.
+`stdout`/`stdin`/`stderr` goes back and forth between the container and our OS.
+In the command above, the filtered BAM stream from the container is piped into the `samtools` command executed on *our OS*.
+We don't have the `samtools` command available on our OS, so this fails.
+:::
+
+## Get high quality alignments quick stats
+
+Pipe out of one container and into another:
+
+```{.bash filename="Terminal"}
+apptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | apptainer exec samtools_1-21.sif samtools flagstat -
+```
