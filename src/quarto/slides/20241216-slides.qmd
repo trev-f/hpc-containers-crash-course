@@ -615,3 +615,28 @@ Still immensely popular -- Borderline default containerization option
 . . .
 
 Terrible for HPCs -- Almost always completely unavailable
+
+## Apptainer works with Docker images {visibility="hidden"}
+
+```{mermaid}
+flowchart LR
+    remote_image["Remote image"]
+    local_image["Local image"]
+
+    remote_image -- pull --> local_image
+
+    interact["Interact w/\ncontainer"]
+
+    local_image -- shell\nrun\nexec --> interact
+```
+
+## Apptainer works with Docker images
+
+Simply use the correct URI
+
+Prepend images on Dockerhub or quay.io with `docker://` instead of our usual `https://`
+
+```{.bash filename="Terminal"}
+# run samtools container from docker image
+apptainer exec docker://quay.io/biocontainers/samtools:1.21--h50ea8bc_0 samtools head data/alignments/wt_antiflag_ip1_rep1.bam
+```
