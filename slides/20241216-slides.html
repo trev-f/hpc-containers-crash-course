@@ -582,6 +582,40 @@ Trevor F. Freeman
 </div>
 <p><a href="https://apptainer.org/docs/user/1.2/singularity_compatibility.html">Singularity Compatibility</a> in Apptainer docs</p>
 </section>
+<section id="configure-apptainer-cache" class="slide level2">
+<h2>Configure Apptainer cache</h2>
+<p>Set Apptainer to cache images in scratch directory</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>~/.bashrc</strong></pre>
+</div>
+<div class="sourceCode" id="cb9" data-filename="~/.bashrc"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a></a><span class="bu">export</span> <span class="va">APPTAINER_CACHE</span><span class="op">=</span><span class="st">"</span><span class="va">${SCRATCHDIR}</span><span class="st">/.apptainer/cache"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Restart your shell session to load this environment variable</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb10" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a></a><span class="bu">exec</span> bash</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="fragment">
+<div title="Apptainer cache">
+<div class="callout callout-important callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Apptainer cache</strong></p>
+</div>
+<div class="callout-content">
+<p>Apptainer does some image management for us. When it fetches an image from a remote location, it caches those images to prevent repeatedly downloading them. By default, it uses <code>$HOME/.apptainer/cache</code> for its cache directory. Home directories on ISAAC-NG are rather small, and Apptainer images can be large, so it makes sense to store these in scratch.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
 <section id="apptainer-pull-get-apptainer-image-from-remote-uri" class="slide level2">
 <h2><code>apptainer pull</code> – Get Apptainer image from remote URI</h2>
 <p>View help docs</p>
@@ -589,7 +623,7 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb9" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a></a><span class="ex">apptainer</span> help pull</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb11" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a></a><span class="ex">apptainer</span> help pull</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Basic usage – <code>apptainer pull [output file] &lt;URI&gt;</code></p>
 <div class="fragment">
@@ -598,11 +632,11 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb10" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a></a><span class="co"># set variable for Samtools image URI</span></span>
-<span id="cb10-2"><a></a><span class="va">samtools_img_uri</span><span class="op">=</span><span class="st">"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"</span></span>
-<span id="cb10-3"><a></a></span>
-<span id="cb10-4"><a></a><span class="co"># pull the apptainer image</span></span>
-<span id="cb10-5"><a></a><span class="ex">apptainer</span> pull samtools_1-21.sif <span class="st">"</span><span class="va">${samtools_img_uri}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb12" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a></a><span class="co"># set variable for Samtools image URI</span></span>
+<span id="cb12-2"><a></a><span class="va">samtools_img_uri</span><span class="op">=</span><span class="st">"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"</span></span>
+<span id="cb12-3"><a></a></span>
+<span id="cb12-4"><a></a><span class="co"># pull the apptainer image</span></span>
+<span id="cb12-5"><a></a><span class="ex">apptainer</span> pull samtools_1-21.sif <span class="st">"</span><span class="va">${samtools_img_uri}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </section>
@@ -643,7 +677,7 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb11" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a></a><span class="ex">apptainer</span> shell samtools_1-21.sif</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb13" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a></a><span class="ex">apptainer</span> shell samtools_1-21.sif</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="fragment">
 <p>How to tell you’re in container shell session:</p>
@@ -658,7 +692,7 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Apptainer shell</strong></pre>
 </div>
-<div class="sourceCode" id="cb12" data-filename="Apptainer shell"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a></a><span class="bu">exit</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb14" data-filename="Apptainer shell"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a></a><span class="bu">exit</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>May also be able to use <kbd aria-hidden="true">Ctrl-d</kbd><span class="visually-hidden">Ctrl-d</span></p>
 </div>
@@ -670,7 +704,7 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb13" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a></a><span class="ex">apptainer</span> shell samtools_1-21.sif</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb15" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a></a><span class="ex">apptainer</span> shell samtools_1-21.sif</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="fragment">
 <p>Samtools is available inside the container</p>
@@ -678,10 +712,10 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Apptainer shell</strong></pre>
 </div>
-<div class="sourceCode" id="cb14" data-filename="Apptainer shell"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a></a><span class="co"># show samtools help</span></span>
-<span id="cb14-2"><a></a><span class="ex">samtools</span> version</span>
-<span id="cb14-3"><a></a><span class="co"># show information about the samtools command</span></span>
-<span id="cb14-4"><a></a><span class="bu">type</span> samtools</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb16" data-filename="Apptainer shell"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a></a><span class="co"># show samtools help</span></span>
+<span id="cb16-2"><a></a><span class="ex">samtools</span> version</span>
+<span id="cb16-3"><a></a><span class="co"># show information about the samtools command</span></span>
+<span id="cb16-4"><a></a><span class="bu">type</span> samtools</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div class="fragment">
@@ -690,9 +724,9 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Apptainer shell</strong></pre>
 </div>
-<div class="sourceCode" id="cb15" data-filename="Apptainer shell"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a></a><span class="co"># commands that aren't available in the container will fail</span></span>
-<span id="cb15-2"><a></a><span class="ex">apptainer</span> <span class="at">--version</span></span>
-<span id="cb15-3"><a></a><span class="ex">module</span> avail</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb17" data-filename="Apptainer shell"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a></a><span class="co"># commands that aren't available in the container will fail</span></span>
+<span id="cb17-2"><a></a><span class="ex">apptainer</span> <span class="at">--version</span></span>
+<span id="cb17-3"><a></a><span class="ex">module</span> avail</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </section>
@@ -703,8 +737,8 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Apptainer shell</strong></pre>
 </div>
-<div class="sourceCode" id="cb16" data-filename="Apptainer shell"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a></a><span class="co"># print BAM file header</span></span>
-<span id="cb16-2"><a></a><span class="ex">samtools</span> head data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb18" data-filename="Apptainer shell"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a></a><span class="co"># print BAM file header</span></span>
+<span id="cb18-2"><a></a><span class="ex">samtools</span> head data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="fragment">
 <p>Thanks to the ISAAC-NG sys admins, all of your favorite ISAAC-NG directories are accessible inside of containers right where we expect them to be!</p>
@@ -712,12 +746,12 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Apptainer shell</strong></pre>
 </div>
-<div class="sourceCode" id="cb17" data-filename="Apptainer shell"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a></a><span class="co"># look into your home and scratch directories</span></span>
-<span id="cb17-2"><a></a><span class="fu">ls</span> <span class="st">"</span><span class="va">${HOME}</span><span class="st">"</span></span>
-<span id="cb17-3"><a></a><span class="fu">ls</span> <span class="st">"</span><span class="va">${SCRATCHDIR}</span><span class="st">"</span></span>
-<span id="cb17-4"><a></a></span>
-<span id="cb17-5"><a></a><span class="co"># look into the list of project directories</span></span>
-<span id="cb17-6"><a></a><span class="fu">ls</span> /lustre/isaac/proj</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb19" data-filename="Apptainer shell"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a></a><span class="co"># look into your home and scratch directories</span></span>
+<span id="cb19-2"><a></a><span class="fu">ls</span> <span class="st">"</span><span class="va">${HOME}</span><span class="st">"</span></span>
+<span id="cb19-3"><a></a><span class="fu">ls</span> <span class="st">"</span><span class="va">${SCRATCHDIR}</span><span class="st">"</span></span>
+<span id="cb19-4"><a></a></span>
+<span id="cb19-5"><a></a><span class="co"># look into the list of project directories</span></span>
+<span id="cb19-6"><a></a><span class="fu">ls</span> /lustre/isaac/proj</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </section>
@@ -728,8 +762,8 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb18" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a></a><span class="co"># print the runscript</span></span>
-<span id="cb18-2"><a></a><span class="ex">apptainer</span> inspect <span class="at">--runscript</span> samtools_1-21.sif</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb20" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a></a><span class="co"># print the runscript</span></span>
+<span id="cb20-2"><a></a><span class="ex">apptainer</span> inspect <span class="at">--runscript</span> samtools_1-21.sif</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="fragment">
 <p>Run the Samtools container</p>
@@ -737,16 +771,16 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb19" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a></a><span class="co"># run the samtools container runscript</span></span>
-<span id="cb19-2"><a></a><span class="ex">apptainer</span> run samtools_1-21.sif</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb21" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a></a><span class="co"># run the samtools container runscript</span></span>
+<span id="cb21-2"><a></a><span class="ex">apptainer</span> run samtools_1-21.sif</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Run Samtools in the Samtools container</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb20" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a></a><span class="co"># run samtools in the samtools container runscript by supplying command line args</span></span>
-<span id="cb20-2"><a></a><span class="ex">apptainer</span> run samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb22" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a></a><span class="co"># run samtools in the samtools container runscript by supplying command line args</span></span>
+<span id="cb22-2"><a></a><span class="ex">apptainer</span> run samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div class="fragment">
@@ -773,8 +807,8 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb21" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a></a><span class="co"># print BAM file header with command directly executed in container</span></span>
-<span id="cb21-2"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb23" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a></a><span class="co"># print BAM file header with command directly executed in container</span></span>
+<span id="cb23-2"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="fragment">
 <div title="apptainer exec">
@@ -825,11 +859,310 @@ Trevor F. Freeman
 <li>Containers allow you to run the software that is available inside the container</li>
 <li>You cannot run software available on the host OS inside the container</li>
 </ul>
+</div>
+</section></section>
+<section>
+<section id="apptainer-containers-in-use-analyze-the-toy-example" class="title-slide slide level1 center">
+<h1>Apptainer containers in use – Analyze the toy example</h1>
+
+</section>
+<section id="get-quick-alignments-info" class="slide level2">
+<h2>Get quick alignments info</h2>
+<p>Count records in BAM with Samtools – <code>samtools view -c &lt;input.bam&gt;</code></p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb24" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools view <span class="at">-c</span> data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="fragment">
+<p>Quick alignment stats – <code>samtools flagstat &lt;input.bam&gt;</code></p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb25" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools view <span class="at">-c</span> data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</section>
+<section id="get-info-about-high-quality-alignments" class="slide level2 smaller">
+<h2>Get info about high quality alignments</h2>
+<p>Count high quality records in BAM – <code>samtools view -c -q 10 &lt;input.bam&gt;</code></p>
+<p>Filters reads by minimum MAPQ (mapping quality)</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb26" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb26-1"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools view <span class="at">-c</span> <span class="at">-q</span> 10 data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="fragment">
+<p>Quick alignment stats of filtered BAM file – <code>samtools view -h -q 10 &lt;input.bam&gt; | samtools flagstat -</code></p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb27" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools view <span class="at">-q</span> 10 <span class="at">-h</span> data/alignments/wt_antiflag_ip1_rep1.bam <span class="kw">|</span> <span class="ex">samtools</span> flagstat <span class="at">-</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div class="fragment">
+<div title="Pipes in Apptainer">
+<div class="callout callout-important callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Pipes in Apptainer</strong></p>
+</div>
+<div class="callout-content">
+<p>Apptainer containers work with pipes and redirects. <code>stdout</code>/<code>stdin</code>/<code>stderr</code> goes back and forth between the container and our OS. In the command above, the filtered BAM stream from the container is piped into the <code>samtools</code> command executed on <em>our OS</em>. We don’t have the <code>samtools</code> command available on our OS, so this fails.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="get-high-quality-alignments-quick-stats" class="slide level2">
+<h2>Get high quality alignments quick stats</h2>
+<p>Pipe out of one container and into another:</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb28" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools view <span class="at">-q</span> 10 <span class="at">-h</span> data/alignments/wt_antiflag_ip1_rep1.bam <span class="kw">|</span> <span class="ex">apptainer</span> exec samtools_1-21.sif samtools flagstat <span class="at">-</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="package-bam-analysis-into-a-script" class="slide level2 smaller">
+<h2>Package BAM analysis into a script</h2>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>compute_bam_stats.sh</strong></pre>
+</div>
+<div class="sourceCode" id="cb29" data-filename="compute_bam_stats.sh"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb29-1"><a></a><span class="co"># get input bam file from command line argument</span></span>
+<span id="cb29-2"><a></a><span class="va">input_bam</span><span class="op">=</span><span class="st">"</span><span class="va">${1}</span><span class="st">"</span></span>
+<span id="cb29-3"><a></a><span class="bu">echo</span> <span class="st">"Input BAM file: </span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb29-4"><a></a></span>
+<span id="cb29-5"><a></a><span class="co"># pull samtools image if it doesn't already exist</span></span>
+<span id="cb29-6"><a></a><span class="va">samtools_img_uri</span><span class="op">=</span><span class="st">"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"</span></span>
+<span id="cb29-7"><a></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-e</span> samtools_1-21.sif <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb29-8"><a></a>  <span class="ex">apptainer</span> pull samtools_1-21.sif <span class="st">"</span><span class="va">${samtools_img_uri}</span><span class="st">"</span></span>
+<span id="cb29-9"><a></a><span class="cf">fi</span></span>
+<span id="cb29-10"><a></a></span>
+<span id="cb29-11"><a></a><span class="co"># print alignment stats</span></span>
+<span id="cb29-12"><a></a><span class="bu">echo</span> <span class="st">"Number records in BAM:"</span></span>
+<span id="cb29-13"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools view <span class="at">-c</span> <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb29-14"><a></a><span class="bu">echo</span> <span class="st">"BAM quick stats:"</span></span>
+<span id="cb29-15"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools flagstat <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb29-16"><a></a></span>
+<span id="cb29-17"><a></a><span class="co"># print alignment stats for high quality alignments</span></span>
+<span id="cb29-18"><a></a><span class="bu">echo</span> <span class="st">"Number high quality records in BAM:"</span></span>
+<span id="cb29-19"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools view <span class="at">-c</span> <span class="at">-q</span> 10 <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb29-20"><a></a><span class="bu">echo</span> <span class="st">"High quality BAM quick stats:"</span></span>
+<span id="cb29-21"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools view <span class="at">-h</span> <span class="at">-q</span> 10 <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">apptainer</span> exec samtools_1-21.sif samtools flagstat <span class="at">-</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Run the BAM stats script</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb30" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><a></a><span class="fu">bash</span> compute_bam_stats.sh data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section></section>
+<section>
+<section id="simplify-apptainer-usage" class="title-slide slide level1 center">
+<h1>Simplify Apptainer usage</h1>
+
+</section>
+<section id="script-is-full-of-duplicated-code" class="slide level2 smaller">
+<h2>Script is full of duplicated code</h2>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>compute_bam_stats.sh</strong></pre>
+</div>
+<div class="sourceCode" id="cb31" data-filename="compute_bam_stats.sh"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb31-1"><a></a><span class="co"># get input bam file from command line argument</span></span>
+<span id="cb31-2"><a></a><span class="va">input_bam</span><span class="op">=</span><span class="st">"</span><span class="va">${1}</span><span class="st">"</span></span>
+<span id="cb31-3"><a></a><span class="bu">echo</span> <span class="st">"Input BAM file: </span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb31-4"><a></a></span>
+<span id="cb31-5"><a></a><span class="co"># pull samtools image if it doesn't already exist</span></span>
+<span id="cb31-6"><a></a><span class="va">samtools_img_uri</span><span class="op">=</span><span class="st">"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"</span></span>
+<span id="cb31-7"><a></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-e</span> samtools_1-21.sif <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb31-8"><a></a>  <span class="ex">apptainer</span> pull samtools_1-21.sif <span class="st">"</span><span class="va">${samtools_img_uri}</span><span class="st">"</span></span>
+<span id="cb31-9"><a></a><span class="cf">fi</span></span>
+<span id="cb31-10"><a></a></span>
+<span id="cb31-11"><a></a><span class="co"># print alignment stats</span></span>
+<span id="cb31-12"><a></a><span class="bu">echo</span> <span class="st">"Number records in BAM:"</span></span>
+<span id="cb31-13"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools view <span class="at">-c</span> <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb31-14"><a></a><span class="bu">echo</span> <span class="st">"BAM quick stats:"</span></span>
+<span id="cb31-15"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools flagstat <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb31-16"><a></a></span>
+<span id="cb31-17"><a></a><span class="co"># print alignment stats for high quality alignments</span></span>
+<span id="cb31-18"><a></a><span class="bu">echo</span> <span class="st">"Number high quality records in BAM:"</span></span>
+<span id="cb31-19"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools view <span class="at">-c</span> <span class="at">-q</span> 10 <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb31-20"><a></a><span class="bu">echo</span> <span class="st">"High quality BAM quick stats:"</span></span>
+<span id="cb31-21"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools view <span class="at">-h</span> <span class="at">-q</span> 10 <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">apptainer</span> exec samtools_1-21.sif samtools flagstat <span class="at">-</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Numerous explicit uses of <code>apptainer pull/exec samtools_1-21.sif</code></p>
+<ul>
+<li>Difficult to maintain – What if we want to update to Samtools v1.22?</li>
+<li>Error prone</li>
+</ul>
+</section>
+<section id="simplify-script-use-variable-for-image-path" class="slide level2 smaller">
+<h2>Simplify script – Use variable for image path</h2>
+<p>Simple refactor: Replace explicit references to image path with a variable</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>compute_bam_stats.sh</strong></pre>
+</div>
+<div class="sourceCode" id="cb32" data-filename="compute_bam_stats.sh"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb32-1"><a></a><span class="co"># get input bam file from command line argument</span></span>
+<span id="cb32-2"><a></a><span class="va">input_bam</span><span class="op">=</span><span class="st">"</span><span class="va">${1}</span><span class="st">"</span></span>
+<span id="cb32-3"><a></a><span class="bu">echo</span> <span class="st">"Input BAM file: </span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb32-4"><a></a></span>
+<span id="cb32-5"><a></a><span class="co"># set Samtools remote image URI and local image path</span></span>
+<span id="cb32-6"><a></a><span class="va">samtools_img_uri</span><span class="op">=</span><span class="st">"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"</span></span>
+<span id="cb32-7"><a></a><span class="va">samtools_img_path</span><span class="op">=</span><span class="st">"samtools_1-21.sif"</span></span>
+<span id="cb32-8"><a></a></span>
+<span id="cb32-9"><a></a><span class="co"># pull samtools image if it doesn't already exist</span></span>
+<span id="cb32-10"><a></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-e</span> <span class="st">"</span><span class="va">${samtools_img_path}</span><span class="st">"</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb32-11"><a></a>  <span class="ex">apptainer</span> pull <span class="st">"</span><span class="va">${samtools_img_path}</span><span class="st">"</span> <span class="st">"</span><span class="va">${samtools_img_uri}</span><span class="st">"</span></span>
+<span id="cb32-12"><a></a><span class="cf">fi</span></span>
+<span id="cb32-13"><a></a></span>
+<span id="cb32-14"><a></a><span class="co"># print alignment stats</span></span>
+<span id="cb32-15"><a></a><span class="bu">echo</span> <span class="st">"Number records in BAM:"</span></span>
+<span id="cb32-16"><a></a><span class="ex">apptainer</span> exec <span class="st">"</span><span class="va">${samtools_img_path}</span><span class="st">"</span> samtools view <span class="at">-c</span> <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb32-17"><a></a><span class="bu">echo</span> <span class="st">"BAM quick stats:"</span></span>
+<span id="cb32-18"><a></a><span class="ex">apptainer</span> exec <span class="st">"</span><span class="va">${samtools_img_path}</span><span class="st">"</span> samtools flagstat <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb32-19"><a></a></span>
+<span id="cb32-20"><a></a><span class="co"># print alignment stats for high quality alignments</span></span>
+<span id="cb32-21"><a></a><span class="bu">echo</span> <span class="st">"Number high quality records in BAM:"</span></span>
+<span id="cb32-22"><a></a><span class="ex">apptainer</span> exec <span class="st">"</span><span class="va">${samtools_img_path}</span><span class="st">"</span> samtools view <span class="at">-c</span> <span class="at">-q</span> 10 <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb32-23"><a></a><span class="bu">echo</span> <span class="st">"High quality BAM quick stats:"</span></span>
+<span id="cb32-24"><a></a><span class="ex">apptainer</span> exec <span class="st">"</span><span class="va">${samtools_img_path}</span><span class="st">"</span> samtools view <span class="at">-h</span> <span class="at">-q</span> 10 <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">apptainer</span> exec <span class="st">"</span><span class="va">${samtools_img_path}</span><span class="st">"</span> samtools flagstat <span class="at">-</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="execute-container-directly-from-remote-image-uri" class="slide level2">
+<h2>Execute container directly from remote image URI</h2>
+<p>Check <code>apptainer exec</code> docs.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb33" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb33-1"><a></a><span class="ex">apptainer</span> help exec</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Many URI types are listed as valid <code>&lt;container&gt;</code> options. <code>https://*</code> is not among them, but it works.</p>
+<div class="fragment">
+<p><code>apptainer exec</code> with remote image URI pulls and caches remote image and executes command inside container</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb34" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb34-1"><a></a><span class="co"># set variable for Samtools image URI</span></span>
+<span id="cb34-2"><a></a><span class="va">samtools_img_uri</span><span class="op">=</span><span class="st">"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"</span></span>
+<span id="cb34-3"><a></a></span>
+<span id="cb34-4"><a></a><span class="co"># run samtools from the container using its URI</span></span>
+<span id="cb34-5"><a></a><span class="ex">apptainer</span> exec <span class="st">"</span><span class="va">${samtools_img_uri}</span><span class="st">"</span> samtools view <span class="at">-c</span> data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</section>
+<section id="simplify-script-execute-from-remote-image-uri" class="slide level2 smaller">
+<h2>Simplify script – Execute from remote image URI</h2>
+<p>Larger refactor:</p>
+<ol type="1">
+<li>Remove explicit image pull</li>
+<li>Execute from remote image URI instead of local image path</li>
+</ol>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>compute_bam_stats.sh</strong></pre>
+</div>
+<div class="sourceCode" id="cb35" data-filename="compute_bam_stats.sh"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb35-1"><a></a><span class="co"># get input bam file from command line argument</span></span>
+<span id="cb35-2"><a></a><span class="va">input_bam</span><span class="op">=</span><span class="st">"</span><span class="va">${1}</span><span class="st">"</span></span>
+<span id="cb35-3"><a></a><span class="bu">echo</span> <span class="st">"Input BAM file: </span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb35-4"><a></a></span>
+<span id="cb35-5"><a></a><span class="co"># set Samtools remote image URI</span></span>
+<span id="cb35-6"><a></a><span class="va">samtools_img_uri</span><span class="op">=</span><span class="st">"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"</span></span>
+<span id="cb35-7"><a></a></span>
+<span id="cb35-8"><a></a><span class="co"># print alignment stats</span></span>
+<span id="cb35-9"><a></a><span class="bu">echo</span> <span class="st">"Number records in BAM:"</span></span>
+<span id="cb35-10"><a></a><span class="ex">apptainer</span> exec <span class="st">"</span><span class="va">${samtools_img_uri}</span><span class="st">"</span> samtools view <span class="at">-c</span> <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb35-11"><a></a><span class="bu">echo</span> <span class="st">"BAM quick stats:"</span></span>
+<span id="cb35-12"><a></a><span class="ex">apptainer</span> exec <span class="st">"</span><span class="va">${samtools_img_uri}</span><span class="st">"</span> samtools flagstat <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb35-13"><a></a></span>
+<span id="cb35-14"><a></a><span class="co"># print alignment stats for high quality alignments</span></span>
+<span id="cb35-15"><a></a><span class="bu">echo</span> <span class="st">"Number high quality records in BAM:"</span></span>
+<span id="cb35-16"><a></a><span class="ex">apptainer</span> exec <span class="st">"</span><span class="va">${samtools_img_uri}</span><span class="st">"</span> samtools view <span class="at">-c</span> <span class="at">-q</span> 10 <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb35-17"><a></a><span class="bu">echo</span> <span class="st">"High quality BAM quick stats:"</span></span>
+<span id="cb35-18"><a></a><span class="ex">apptainer</span> exec <span class="st">"</span><span class="va">${samtools_img_uri}</span><span class="st">"</span> samtools view <span class="at">-h</span> <span class="at">-q</span> 10 <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">apptainer</span> exec <span class="st">"</span><span class="va">${samtools_img_uri}</span><span class="st">"</span> samtools flagstat <span class="at">-</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="simulate-loading-software-with-function" class="slide level2 smaller">
+<h2>Simulate “loading” software with function</h2>
+<p>Abstracts away the fact we’re using a container from the main program logic</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb36" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb36-1"><a></a><span class="co"># make function to execute Samtools in Apptainer container</span></span>
+<span id="cb36-2"><a></a><span class="kw">function</span><span class="fu"> samtools</span> <span class="kw">{</span></span>
+<span id="cb36-3"><a></a>  <span class="bu">local</span> <span class="va">img_uri</span><span class="op">=</span><span class="st">"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"</span></span>
+<span id="cb36-4"><a></a>  <span class="ex">apptainer</span> exec <span class="st">"</span><span class="va">${img_uri}</span><span class="st">"</span> samtools <span class="st">"</span><span class="va">${@}</span><span class="st">"</span></span>
+<span id="cb36-5"><a></a><span class="kw">}</span></span>
+<span id="cb36-6"><a></a></span>
+<span id="cb36-7"><a></a><span class="co"># run samtools from the container using its function</span></span>
+<span id="cb36-8"><a></a><span class="ex">samtools</span> view <span class="at">-c</span> data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="fragment">
+<div title="'Load' container from function">
+<div class="callout callout-caution callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>‘Load’ container from function</strong></p>
+</div>
+<div class="callout-content">
+<p>The abstraction makes this method powerful and expressive, but it introduces some overhead. Since <code>samtools</code> is a function and not an executable file, there will be situations in which it doesn’t behave as running the typical command. There could also be some scenarios where passing arguments to the <code>samtools</code> command in the container through the <code>samtools</code> function doesn’t behave as expected.</p>
+<p>Long story short: beware of edge cases.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="simplify-script-use-function-to-simulate-loading-software" class="slide level2 smaller">
+<h2>Simplify script – Use function to simulate “loading” software</h2>
+<p>Most significant refactor: Replace individual <code>apptainer exec</code> commands with calls to <code>samtools</code> function</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>compute_bam_stats.sh</strong></pre>
+</div>
+<div class="sourceCode" id="cb37" data-filename="compute_bam_stats.sh"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb37-1"><a></a><span class="co"># get input bam file from command line argument</span></span>
+<span id="cb37-2"><a></a><span class="va">input_bam</span><span class="op">=</span><span class="st">"</span><span class="va">${1}</span><span class="st">"</span></span>
+<span id="cb37-3"><a></a><span class="bu">echo</span> <span class="st">"Input BAM file: </span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb37-4"><a></a></span>
+<span id="cb37-5"><a></a><span class="co"># make function to execute Samtools in Apptainer container</span></span>
+<span id="cb37-6"><a></a><span class="kw">function</span><span class="fu"> samtools</span> <span class="kw">{</span></span>
+<span id="cb37-7"><a></a>  <span class="bu">local</span> <span class="va">img_uri</span><span class="op">=</span><span class="st">"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"</span></span>
+<span id="cb37-8"><a></a>  <span class="ex">apptainer</span> exec <span class="st">"</span><span class="va">${img_uri}</span><span class="st">"</span> samtools <span class="st">"</span><span class="va">${@}</span><span class="st">"</span></span>
+<span id="cb37-9"><a></a><span class="kw">}</span></span>
+<span id="cb37-10"><a></a></span>
+<span id="cb37-11"><a></a><span class="co"># print alignment stats</span></span>
+<span id="cb37-12"><a></a><span class="bu">echo</span> <span class="st">"Number records in BAM:"</span></span>
+<span id="cb37-13"><a></a><span class="ex">samtools</span> view <span class="at">-c</span> <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb37-14"><a></a><span class="bu">echo</span> <span class="st">"BAM quick stats:"</span></span>
+<span id="cb37-15"><a></a><span class="ex">samtools</span> flagstat <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb37-16"><a></a></span>
+<span id="cb37-17"><a></a><span class="co"># print alignment stats for high quality alignments</span></span>
+<span id="cb37-18"><a></a><span class="bu">echo</span> <span class="st">"Number high quality records in BAM:"</span></span>
+<span id="cb37-19"><a></a><span class="ex">samtools</span> view <span class="at">-c</span> <span class="at">-q</span> 10 <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
+<span id="cb37-20"><a></a><span class="bu">echo</span> <span class="st">"High quality BAM quick stats:"</span></span>
+<span id="cb37-21"><a></a><span class="ex">samtools</span> view <span class="at">-h</span> <span class="at">-q</span> 10 <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">samtools</span> flagstat <span class="at">-</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
-</div>
 </div>
 </div>
 </section></section>

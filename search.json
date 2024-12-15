@@ -49,6 +49,13 @@
     "text": "Terminology note: Apptainer is Singularity\nBoth Apptainer and Singularity commands show same version\n\n\nTerminal\n\napptainer --version\nsingularity --version\n\nRunning singularity launches Apptainer\n\n\nTerminal\n\n# find executables for Apptainer and Singularity\nwhich apptainer\nwhich singularity\n\n# show more info about those executables\nls -lh /usr/bin/apptainer /usr/bin/singularity\n\nSingularity Compatibility in Apptainer docs"
   },
   {
+    "objectID": "slides/20241216-slides.html#configure-apptainer-cache",
+    "href": "slides/20241216-slides.html#configure-apptainer-cache",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Configure Apptainer cache",
+    "text": "Configure Apptainer cache\nSet Apptainer to cache images in scratch directory\n\n\n~/.bashrc\n\nexport APPTAINER_CACHE=\"${SCRATCHDIR}/.apptainer/cache\"\n\nRestart your shell session to load this environment variable\n\n\nTerminal\n\nexec bash\n\n\n\n\n\n\n\n\n\nApptainer cache\n\n\nApptainer does some image management for us. When it fetches an image from a remote location, it caches those images to prevent repeatedly downloading them. By default, it uses $HOME/.apptainer/cache for its cache directory. Home directories on ISAAC-NG are rather small, and Apptainer images can be large, so it makes sense to store these in scratch."
+  },
+  {
     "objectID": "slides/20241216-slides.html#apptainer-pull-get-apptainer-image-from-remote-uri",
     "href": "slides/20241216-slides.html#apptainer-pull-get-apptainer-image-from-remote-uri",
     "title": "Using Containerized Software on HPC for Bioinformatics",
@@ -110,6 +117,76 @@
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "Run Apptainer conclusions – Software and files",
     "text": "Run Apptainer conclusions – Software and files\n\nYou shouldn’t need to bind any files into Apptainer containers on ISAAC-NG for normal use\n\nSys admins took care of this for you!\nCaveat: Some (rare) containers may expect files in specific locations. Look into bind paths and mounts\n\n\n\n\nContainers allow you to run the software that is available inside the container\nYou cannot run software available on the host OS inside the container"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#get-quick-alignments-info",
+    "href": "slides/20241216-slides.html#get-quick-alignments-info",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Get quick alignments info",
+    "text": "Get quick alignments info\nCount records in BAM with Samtools – samtools view -c &lt;input.bam&gt;\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nQuick alignment stats – samtools flagstat &lt;input.bam&gt;\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#get-info-about-high-quality-alignments",
+    "href": "slides/20241216-slides.html#get-info-about-high-quality-alignments",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Get info about high quality alignments",
+    "text": "Get info about high quality alignments\nCount high quality records in BAM – samtools view -c -q 10 &lt;input.bam&gt;\nFilters reads by minimum MAPQ (mapping quality)\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -c -q 10 data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nQuick alignment stats of filtered BAM file – samtools view -h -q 10 &lt;input.bam&gt; | samtools flagstat -\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | samtools flagstat -\n\n\n\n\n\n\n\n\n\n\nPipes in Apptainer\n\n\nApptainer containers work with pipes and redirects. stdout/stdin/stderr goes back and forth between the container and our OS. In the command above, the filtered BAM stream from the container is piped into the samtools command executed on our OS. We don’t have the samtools command available on our OS, so this fails."
+  },
+  {
+    "objectID": "slides/20241216-slides.html#get-high-quality-alignments-quick-stats",
+    "href": "slides/20241216-slides.html#get-high-quality-alignments-quick-stats",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Get high quality alignments quick stats",
+    "text": "Get high quality alignments quick stats\nPipe out of one container and into another:\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | apptainer exec samtools_1-21.sif samtools flagstat -"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#package-bam-analysis-into-a-script",
+    "href": "slides/20241216-slides.html#package-bam-analysis-into-a-script",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Package BAM analysis into a script",
+    "text": "Package BAM analysis into a script\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# pull samtools image if it doesn't already exist\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nif [ ! -e samtools_1-21.sif ]; then\n  apptainer pull samtools_1-21.sif \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools view -h -q 10 \"${input_bam}\" | apptainer exec samtools_1-21.sif samtools flagstat -\n\nRun the BAM stats script\n\n\nTerminal\n\nbash compute_bam_stats.sh data/alignments/wt_antiflag_ip1_rep1.bam"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#script-is-full-of-duplicated-code",
+    "href": "slides/20241216-slides.html#script-is-full-of-duplicated-code",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Script is full of duplicated code",
+    "text": "Script is full of duplicated code\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# pull samtools image if it doesn't already exist\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nif [ ! -e samtools_1-21.sif ]; then\n  apptainer pull samtools_1-21.sif \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools view -h -q 10 \"${input_bam}\" | apptainer exec samtools_1-21.sif samtools flagstat -\n\nNumerous explicit uses of apptainer pull/exec samtools_1-21.sif\n\nDifficult to maintain – What if we want to update to Samtools v1.22?\nError prone"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#simplify-script-use-variable-for-image-path",
+    "href": "slides/20241216-slides.html#simplify-script-use-variable-for-image-path",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Simplify script – Use variable for image path",
+    "text": "Simplify script – Use variable for image path\nSimple refactor: Replace explicit references to image path with a variable\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# set Samtools remote image URI and local image path\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nsamtools_img_path=\"samtools_1-21.sif\"\n\n# pull samtools image if it doesn't already exist\nif [ ! -e \"${samtools_img_path}\" ]; then\n  apptainer pull \"${samtools_img_path}\" \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec \"${samtools_img_path}\" samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec \"${samtools_img_path}\" samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec \"${samtools_img_path}\" samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec \"${samtools_img_path}\" samtools view -h -q 10 \"${input_bam}\" | apptainer exec \"${samtools_img_path}\" samtools flagstat -"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#execute-container-directly-from-remote-image-uri",
+    "href": "slides/20241216-slides.html#execute-container-directly-from-remote-image-uri",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Execute container directly from remote image URI",
+    "text": "Execute container directly from remote image URI\nCheck apptainer exec docs.\n\n\nTerminal\n\napptainer help exec\n\nMany URI types are listed as valid &lt;container&gt; options. https://* is not among them, but it works.\n\napptainer exec with remote image URI pulls and caches remote image and executes command inside container\n\n\nTerminal\n\n# set variable for Samtools image URI\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n\n# run samtools from the container using its URI\napptainer exec \"${samtools_img_uri}\" samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#simplify-script-execute-from-remote-image-uri",
+    "href": "slides/20241216-slides.html#simplify-script-execute-from-remote-image-uri",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Simplify script – Execute from remote image URI",
+    "text": "Simplify script – Execute from remote image URI\nLarger refactor:\n\nRemove explicit image pull\nExecute from remote image URI instead of local image path\n\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# set Samtools remote image URI\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec \"${samtools_img_uri}\" samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec \"${samtools_img_uri}\" samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec \"${samtools_img_uri}\" samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec \"${samtools_img_uri}\" samtools view -h -q 10 \"${input_bam}\" | apptainer exec \"${samtools_img_uri}\" samtools flagstat -"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#simulate-loading-software-with-function",
+    "href": "slides/20241216-slides.html#simulate-loading-software-with-function",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Simulate “loading” software with function",
+    "text": "Simulate “loading” software with function\nAbstracts away the fact we’re using a container from the main program logic\n\n\nTerminal\n\n# make function to execute Samtools in Apptainer container\nfunction samtools {\n  local img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n  apptainer exec \"${img_uri}\" samtools \"${@}\"\n}\n\n# run samtools from the container using its function\nsamtools view -c data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\n‘Load’ container from function\n\n\nThe abstraction makes this method powerful and expressive, but it introduces some overhead. Since samtools is a function and not an executable file, there will be situations in which it doesn’t behave as running the typical command. There could also be some scenarios where passing arguments to the samtools command in the container through the samtools function doesn’t behave as expected.\nLong story short: beware of edge cases."
+  },
+  {
+    "objectID": "slides/20241216-slides.html#simplify-script-use-function-to-simulate-loading-software",
+    "href": "slides/20241216-slides.html#simplify-script-use-function-to-simulate-loading-software",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Simplify script – Use function to simulate “loading” software",
+    "text": "Simplify script – Use function to simulate “loading” software\nMost significant refactor: Replace individual apptainer exec commands with calls to samtools function\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# make function to execute Samtools in Apptainer container\nfunction samtools {\n  local img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n  apptainer exec \"${img_uri}\" samtools \"${@}\"\n}\n\n# print alignment stats\necho \"Number records in BAM:\"\nsamtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\nsamtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\nsamtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\nsamtools view -h -q 10 \"${input_bam}\" | samtools flagstat -"
   },
   {
     "objectID": "index.html",
