@@ -135,6 +135,29 @@ ls -lh /usr/bin/apptainer /usr/bin/singularity
 
 [Singularity Compatibility](https://apptainer.org/docs/user/1.2/singularity_compatibility.html) in Apptainer docs
 
+## Configure Apptainer cache
+
+Set Apptainer to cache images in scratch directory
+
+```{.bash filename="~/.bashrc"}
+export APPTAINER_CACHE="${SCRATCHDIR}/.apptainer/cache"
+```
+
+Restart your shell session to load this environment variable
+
+```{.bash filename="Terminal"}
+exec bash
+```
+
+. . .
+
+::: {.callout-important title="Apptainer cache"}
+Apptainer does some image management for us.
+When it fetches an image from a remote location, it caches those images to prevent repeatedly downloading them.
+By default, it uses `$HOME/.apptainer/cache` for its cache directory.
+Home directories on ISAAC-NG are rather small, and Apptainer images can be large, so it makes sense to store these in scratch.
+:::
+
 ## `apptainer pull` -- Get Apptainer image from remote URI
 
 View help docs
@@ -372,4 +395,204 @@ Pipe out of one container and into another:
 
 ```{.bash filename="Terminal"}
 apptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | apptainer exec samtools_1-21.sif samtools flagstat -
+```
+
+## Package BAM analysis into a script {.smaller}
+
+```{.bash filename="compute_bam_stats.sh"}
+# get input bam file from command line argument
+input_bam="${1}"
+echo "Input BAM file: ${input_bam}"
+
+# pull samtools image if it doesn't already exist
+samtools_img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+if [ ! -e samtools_1-21.sif ]; then
+  apptainer pull samtools_1-21.sif "${samtools_img_uri}"
+fi
+
+# print alignment stats
+echo "Number records in BAM:"
+apptainer exec samtools_1-21.sif samtools view -c "${input_bam}"
+echo "BAM quick stats:"
+apptainer exec samtools_1-21.sif samtools flagstat "${input_bam}"
+
+# print alignment stats for high quality alignments
+echo "Number high quality records in BAM:"
+apptainer exec samtools_1-21.sif samtools view -c -q 10 "${input_bam}"
+echo "High quality BAM quick stats:"
+apptainer exec samtools_1-21.sif samtools view -h -q 10 "${input_bam}" | apptainer exec samtools_1-21.sif samtools flagstat -
+```
+
+Run the BAM stats script
+
+```{.bash filename="Terminal"}
+bash compute_bam_stats.sh data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+# Simplify Apptainer usage
+
+## Script is full of duplicated code {.smaller}
+
+```{.bash filename="compute_bam_stats.sh"}
+# get input bam file from command line argument
+input_bam="${1}"
+echo "Input BAM file: ${input_bam}"
+
+# pull samtools image if it doesn't already exist
+samtools_img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+if [ ! -e samtools_1-21.sif ]; then
+  apptainer pull samtools_1-21.sif "${samtools_img_uri}"
+fi
+
+# print alignment stats
+echo "Number records in BAM:"
+apptainer exec samtools_1-21.sif samtools view -c "${input_bam}"
+echo "BAM quick stats:"
+apptainer exec samtools_1-21.sif samtools flagstat "${input_bam}"
+
+# print alignment stats for high quality alignments
+echo "Number high quality records in BAM:"
+apptainer exec samtools_1-21.sif samtools view -c -q 10 "${input_bam}"
+echo "High quality BAM quick stats:"
+apptainer exec samtools_1-21.sif samtools view -h -q 10 "${input_bam}" | apptainer exec samtools_1-21.sif samtools flagstat -
+```
+
+Numerous explicit uses of `apptainer pull/exec samtools_1-21.sif`
+
+* Difficult to maintain -- What if we want to update to Samtools v1.22?
+* Error prone
+
+## Simplify script -- Use variable for image path {.smaller}
+
+Simple refactor: Replace explicit references to image path with a variable
+
+```{.bash filename="compute_bam_stats.sh"}
+# get input bam file from command line argument
+input_bam="${1}"
+echo "Input BAM file: ${input_bam}"
+
+# set Samtools remote image URI and local image path
+samtools_img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+samtools_img_path="samtools_1-21.sif"
+
+# pull samtools image if it doesn't already exist
+if [ ! -e "${samtools_img_path}" ]; then
+  apptainer pull "${samtools_img_path}" "${samtools_img_uri}"
+fi
+
+# print alignment stats
+echo "Number records in BAM:"
+apptainer exec "${samtools_img_path}" samtools view -c "${input_bam}"
+echo "BAM quick stats:"
+apptainer exec "${samtools_img_path}" samtools flagstat "${input_bam}"
+
+# print alignment stats for high quality alignments
+echo "Number high quality records in BAM:"
+apptainer exec "${samtools_img_path}" samtools view -c -q 10 "${input_bam}"
+echo "High quality BAM quick stats:"
+apptainer exec "${samtools_img_path}" samtools view -h -q 10 "${input_bam}" | apptainer exec "${samtools_img_path}" samtools flagstat -
+```
+
+## Execute container directly from remote image URI
+
+Check `apptainer exec` docs.
+
+```{.bash filename="Terminal"}
+apptainer help exec
+```
+
+Many URI types are listed as valid `<container>` options.
+`https://*` is not among them, but it works.
+
+. . .
+
+`apptainer exec` with remote image URI pulls and caches remote image and executes command inside container
+
+```{.bash filename="Terminal"}
+# set variable for Samtools image URI
+samtools_img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+
+# run samtools from the container using its URI
+apptainer exec "${samtools_img_uri}" samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+## Simplify script -- Execute from remote image URI {.smaller}
+
+Larger refactor:
+
+1. Remove explicit image pull
+2. Execute from remote image URI instead of local image path
+
+```{.bash filename="compute_bam_stats.sh"}
+# get input bam file from command line argument
+input_bam="${1}"
+echo "Input BAM file: ${input_bam}"
+
+# set Samtools remote image URI
+samtools_img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+
+# print alignment stats
+echo "Number records in BAM:"
+apptainer exec "${samtools_img_uri}" samtools view -c "${input_bam}"
+echo "BAM quick stats:"
+apptainer exec "${samtools_img_uri}" samtools flagstat "${input_bam}"
+
+# print alignment stats for high quality alignments
+echo "Number high quality records in BAM:"
+apptainer exec "${samtools_img_uri}" samtools view -c -q 10 "${input_bam}"
+echo "High quality BAM quick stats:"
+apptainer exec "${samtools_img_uri}" samtools view -h -q 10 "${input_bam}" | apptainer exec "${samtools_img_uri}" samtools flagstat -
+```
+
+## Simulate "loading" software with function {.smaller}
+
+Abstracts away the fact we're using a container from the main program logic
+
+```{.bash filename="Terminal"}
+# make function to execute Samtools in Apptainer container
+function samtools {
+  local img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+  apptainer exec "${img_uri}" samtools "${@}"
+}
+
+# run samtools from the container using its function
+samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+. . .
+
+::: {.callout-caution title="'Load' container from function"}
+The abstraction makes this method powerful and expressive, but it introduces some overhead.
+Since `samtools` is a function and not an executable file, there will be situations in which it doesn't behave as running the typical command.
+There could also be some scenarios where passing arguments to the `samtools` command in the container through the `samtools` function doesn't behave as expected.
+
+Long story short: beware of edge cases.
+:::
+
+## Simplify script -- Use function to simulate "loading" software {.smaller}
+
+Most significant refactor: Replace individual `apptainer exec` commands with calls to `samtools` function
+
+```{.bash filename="compute_bam_stats.sh"}
+# get input bam file from command line argument
+input_bam="${1}"
+echo "Input BAM file: ${input_bam}"
+
+# make function to execute Samtools in Apptainer container
+function samtools {
+  local img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+  apptainer exec "${img_uri}" samtools "${@}"
+}
+
+# print alignment stats
+echo "Number records in BAM:"
+samtools view -c "${input_bam}"
+echo "BAM quick stats:"
+samtools flagstat "${input_bam}"
+
+# print alignment stats for high quality alignments
+echo "Number high quality records in BAM:"
+samtools view -c -q 10 "${input_bam}"
+echo "High quality BAM quick stats:"
+samtools view -h -q 10 "${input_bam}" | samtools flagstat -
 ```
