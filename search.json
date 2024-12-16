@@ -189,6 +189,125 @@
     "text": "Simplify script – Use function to simulate “loading” software\nMost significant refactor: Replace individual apptainer exec commands with calls to samtools function\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# make function to execute Samtools in Apptainer container\nfunction samtools {\n  local img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n  apptainer exec \"${img_uri}\" samtools \"${@}\"\n}\n\n# print alignment stats\necho \"Number records in BAM:\"\nsamtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\nsamtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\nsamtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\nsamtools view -h -q 10 \"${input_bam}\" | samtools flagstat -"
   },
   {
+    "objectID": "slides/20241216-slides.html#what-is-docker",
+    "href": "slides/20241216-slides.html#what-is-docker",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "What is Docker?",
+    "text": "What is Docker?\nAccording to Docker:\n\n“The Industry-Leading Container Runtime”\n“Docker Engine is the industry’s de facto container runtime”\n\n\nUntil recently Docker was nearly synonymous with containerization\nStill immensely popular – Borderline default containerization option\n\n\nTerrible for HPCs – Almost always completely unavailable"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-works-with-docker-images-1",
+    "href": "slides/20241216-slides.html#apptainer-works-with-docker-images-1",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Apptainer works with Docker images",
+    "text": "Apptainer works with Docker images\nSimply use the correct URI\nPrepend images on Dockerhub or quay.io with docker:// instead of our usual https://\n\n\nTerminal\n\n# run samtools container from docker image\napptainer exec docker://quay.io/biocontainers/samtools:1.21--h50ea8bc_0 samtools head data/alignments/wt_antiflag_ip1_rep1.bam"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#remote-image-considerations",
+    "href": "slides/20241216-slides.html#remote-image-considerations",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Remote image considerations",
+    "text": "Remote image considerations\nNeed to balance several factors:\n\nReliability & stability – Will the image be there the next time you try to pull it?\nUpdates – Will new images be made available with updated versions of software?\nAccessibility – Is it easy to find and use the images when you need them? Are they reasonably sized?\nSecurity – Does the container do what you need it to do without any weird side effects?"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#remote-image-sources",
+    "href": "slides/20241216-slides.html#remote-image-sources",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Remote image sources",
+    "text": "Remote image sources\n\nOfficial image from software authors/maintainers\n\nUp to date and stable – Only as good as the maintainers\nExample: Google DeepVariant\n\n\n\n\nLarge, community driven resources – Especially for general software\n\nHighly stable\nFrequently updated\nExample: Rocker project for R environment\n\n\n\n\n\nBioContainers container registry\n\nExcellent resource for popular (and many unpopular) bioinformatics programs\nMany versions available and frequently updated\nHighly stable"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#other-image-sources",
+    "href": "slides/20241216-slides.html#other-image-sources",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Other image sources",
+    "text": "Other image sources\n\nPublic repositories, e.g. other people’s images on Docker Hub\n\nLimited reliability\nMinor security concerns\nNo guaranteed updates\nUsually last resort\n\n\n\n\nBuild custom image\n\nApptainer build from definition file\nGives you the power to do almost anything – This is a pro and a con\nOnly as straightforward as installing the software you need to containerize"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#containerized-rstudio-server-on-isaac-ng",
+    "href": "slides/20241216-slides.html#containerized-rstudio-server-on-isaac-ng",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Containerized RStudio server on ISAAC-NG",
+    "text": "Containerized RStudio server on ISAAC-NG\nWhy?\n\nAvoid moving data on and off HPC\nAccess more resources than local computer\nRun long jobs that would be difficult to run locally\n\n\nHow?\n\nUse RStudio server image\nWrite Slurm job submission script\nExpose port we can safely and securely access"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rocker-project-slurm-script",
+    "href": "slides/20241216-slides.html#rocker-project-slurm-script",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Rocker project Slurm script",
+    "text": "Rocker project Slurm script\nUseful links from the Rocker project\n\nRocker RStudio server image\nRocker singularity\n\nIn the next several slides, we’ll build a Slurm job submission script based on the Rocker example script."
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-sbatch-headers",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-sbatch-headers",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – SBATCH headers",
+    "text": "RStudio server Slurm script – SBATCH headers\nSBATCH headers control job submission configurations\n\n\nrstudio_server.sh\n\n#!/bin/bash\n#SBATCH --job-name=rstudio_server\n1#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err\n2#SBATCH --output=/dev/null\n#SBATCH --signal=USR2\n#SBATCH --account=ACF-UTK0011\n#SBATCH --partition=short\n#SBATCH --qos=short\n#SBATCH --cpus-per-task=1\n#SBATCH --mem=2GB\n#SBATCH --time=00-00:15:00\n\n\n1\n\nWe log useful information about how to access our RStudio server session into the stderr file.\n\n2\n\nWe don’t need anything from stdout."
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-tmp-directory",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-tmp-directory",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – tmp directory",
+    "text": "RStudio server Slurm script – tmp directory\nCreate a temporary directory specific to your user session so that your specific temporary files don’t clash those of other users.\n\n\nrstudio_server.sh\n\n# Create temporary directory to be populated with directories to bind-mount in the container\n# where writable file systems are necessary. Adjust path as appropriate for your computing environment.\nworkdir=$(mktemp -d)"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-configure-r-session",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-configure-r-session",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Configure R session",
+    "text": "RStudio server Slurm script – Configure R session\nConfigure R session to use R packages/libraries that won’t conflict with those from another R session and installation you have.\n\n\nrstudio_server.sh\n\n# Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with\n# personal libraries from any R installation in the host environment\ncat &gt; ${workdir}/rsession.sh &lt;&lt;\"END\"\n#!/bin/sh\n1export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2\nmkdir -p \"${R_LIBS_USER}\"\n## custom Rprofile & Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)\n2# export R_PROFILE_USER=/path/to/Rprofile\n# export R_ENVIRON_USER=/path/to/Renviron\nexec /usr/lib/rstudio-server/bin/rsession \"${@}\"\nEND\n\n# make R session script executable and configure it to be bound into the container at runtime\nchmod +x ${workdir}/rsession.sh\nexport SINGULARITY_BIND=\"${workdir}/rsession.sh:/etc/rstudio/rsession.sh\"\n\n\n1\n\nThis uses the \"${HOME}\" directory by default. If you plan to use this for real analyses it’s not a bad idea to set this to use your \"${SCRATCHDIR}\".\n\n2\n\nIf you’re a highly knowledgeable R user, set these variables to have greater control over the profile and environment used in your RStudio session."
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-do-not-suspend-idle-sessions",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-do-not-suspend-idle-sessions",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Do not suspend idle sessions",
+    "text": "RStudio server Slurm script – Do not suspend idle sessions\n\n\nrstudio_server.sh\n\n# Do not suspend idle sessions.\n# Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf\n# https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126\nexport SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT=0"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-authorization",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-authorization",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Authorization",
+    "text": "RStudio server Slurm script – Authorization\nRequire a username and password for additional security\n\n\nrstudio_server.sh\n\n# set user ID and password for RStudio server\n1export SINGULARITYENV_USER=$(whoami)\n2export SINGULARITYENV_PASSWORD=$(openssl rand -base64 15)\n\n\n1\n\nUsername is your ISAAC username.\n\n2\n\nPassword is randomly generated. You can change this to a password of your choosing if desired, but be careful about checking this into version control, especially if it’s one of your usual passwords. I recommend just leaving this as a randomly generated password – we’ll see in a second that the password isn’t that important."
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-get-open-port",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-get-open-port",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Get open port",
+    "text": "RStudio server Slurm script – Get open port\nWe have to have an open port to expose our RStudio server. Since ISAAC is a shared resource, many of the ports will likely be taken, so we have to find and use an available one.\n\n\nrstudio_server.sh\n\n# get unused socket per https://unix.stackexchange.com/a/132524\n# tiny race condition between the python & singularity commands\nreadonly PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind((\"\", 0)); print(s.getsockname()[1]); s.close()')"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-write-session-usage-directions",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-write-session-usage-directions",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Write session usage directions",
+    "text": "RStudio server Slurm script – Write session usage directions\nWrite RStudio server session usage directions to stderr. We will access these in the error file specified in the SBATCH header.\n\n\nrstudio_server.sh\n\n# write session usage information to stderr\ncat 1&gt;&2 &lt;&lt;END\n1. SSH tunnel from your workstation using the following command:\n\n   ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@login.isaac.utk.edu\n\n   and point your web browser to http://localhost:8787\n\n2. log in to RStudio Server using the following credentials:\n\n   user: ${SINGULARITYENV_USER}\n   password: ${SINGULARITYENV_PASSWORD}\n\nWhen done using RStudio Server, terminate the job by:\n\n1. Exit the RStudio Session (\"power\" button in the top right corner of the RStudio window)\n2. Issue the following command on the login node:\n\n      scancel -f ${SLURM_JOB_ID}\nEND"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-launch-rstudio-server",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-launch-rstudio-server",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Launch RStudio server",
+    "text": "RStudio server Slurm script – Launch RStudio server\nHere we actually run the RStudio server command that starts the RStudio server session we will connect to.\n\n\nrstudio_server.sh\n\n# run RStudio Server from apptainer image\nreadonly rstudio_server_img_uri=\"docker://rocker/rstudio:4.4.2\"\napptainer exec \\\n  --cleanenv \\\n  --scratch /run,/tmp,/var/lib/rstudio-server \\\n  --workdir ${workdir} \\\n  \"${rstudio_server_img_uri}\" \\\n  rserver --www-port ${PORT} \\\n  --auth-none=0 \\\n  --auth-pam-helper-path=pam-helper \\\n  --server-user=$(whoami) \\\n  --auth-stay-signed-in-days=30 \\\n  --auth-timeout-minutes=0 \\\n  --rsession-path=/etc/rstudio/rsession.sh\nprintf 'rserver exited' 1&gt;&2"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-full-script",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-full-script",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Full script",
+    "text": "RStudio server Slurm script – Full script\n\n\nrstudio_server.sh\n\n#!/bin/bash\n#SBATCH --job-name=rstudio_server\n#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err\n#SBATCH --output=/dev/null\n#SBATCH --signal=USR2\n#SBATCH --account=ACF-UTK0011\n#SBATCH --partition=short\n#SBATCH --qos=short\n#SBATCH --cpus-per-task=1\n#SBATCH --mem=2GB\n#SBATCH --time=00-00:15:00\n\n# Create temporary directory to be populated with directories to bind-mount in the container\n# where writable file systems are necessary. Adjust path as appropriate for your computing environment.\nworkdir=$(mktemp -d)\n\n# Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with\n# personal libraries from any R installation in the host environment\ncat &gt; ${workdir}/rsession.sh &lt;&lt;\"END\"\n#!/bin/sh\nexport R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2\nmkdir -p \"${R_LIBS_USER}\"\n## custom Rprofile & Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)\n# export R_PROFILE_USER=/path/to/Rprofile\n# export R_ENVIRON_USER=/path/to/Renviron\nexec /usr/lib/rstudio-server/bin/rsession \"${@}\"\nEND\n\n# make R session script executable and configure it to be bound into the container at runtime\nchmod +x ${workdir}/rsession.sh\nexport SINGULARITY_BIND=\"${workdir}/rsession.sh:/etc/rstudio/rsession.sh\"\n\n# Do not suspend idle sessions.\n# Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf\n# https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126\nexport SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT=0\n\n# set user ID and password for RStudio server\nexport SINGULARITYENV_USER=$(whoami)\nexport SINGULARITYENV_PASSWORD=$(openssl rand -base64 15)\n\n# get unused socket per https://unix.stackexchange.com/a/132524\n# tiny race condition between the python & singularity commands\nreadonly PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind((\"\", 0)); print(s.getsockname()[1]); s.close()')\n\n# write session usage information to stderr\ncat 1&gt;&2 &lt;&lt;END\n1. SSH tunnel from your workstation using the following command:\n\n   ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@login.isaac.utk.edu\n\n   and point your web browser to http://localhost:8787\n\n2. log in to RStudio Server using the following credentials:\n\n   user: ${SINGULARITYENV_USER}\n   password: ${SINGULARITYENV_PASSWORD}\n\nWhen done using RStudio Server, terminate the job by:\n\n1. Exit the RStudio Session (\"power\" button in the top right corner of the RStudio window)\n2. Issue the following command on the login node:\n\n      scancel -f ${SLURM_JOB_ID}\nEND\n\n# run RStudio Server from apptainer image\nreadonly rstudio_server_img_uri=\"docker://rocker/rstudio:4.4.2\"\napptainer exec \\\n  --cleanenv \\\n  --scratch /run,/tmp,/var/lib/rstudio-server \\\n  --workdir ${workdir} \\\n  \"${rstudio_server_img_uri}\" \\\n  rserver --www-port ${PORT} \\\n  --auth-none=0 \\\n  --auth-pam-helper-path=pam-helper \\\n  --server-user=$(whoami) \\\n  --auth-stay-signed-in-days=30 \\\n  --auth-timeout-minutes=0 \\\n  --rsession-path=/etc/rstudio/rsession.sh\nprintf 'rserver exited' 1&gt;&2"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#run-rstudio-server-slurm-job",
+    "href": "slides/20241216-slides.html#run-rstudio-server-slurm-job",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Run RStudio server Slurm job",
+    "text": "Run RStudio server Slurm job\n\nSubmit job to Slurm scheduler\n\n\n\nTerminal\n\nsbatch rstudio_server.sh\n\n\n\nPrint captured usage info from job error file\n\n\n\nTerminal\n\ncat .cache/sbatch_logs/&lt;job ID&gt;_-_rstudio_server.err\n\n\n\n\nOpen a new terminal session on your local machine – NOT ISAAC-NG. Run the ssh command from the error file. Authenticate and leave the SSH session open.\n\n\n\nTerminal\n\nssh -N -L 8787:&lt;host&gt;:&lt;port&gt; &lt;user&gt;@login.isaac.utk.edu\n\n\n\n\nOpen browser window and connect to RStudio server URL: http://localhost:8787/\n\nAuthenticate using the username and password listed in your error file."
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "HPC Containers Crash Course",

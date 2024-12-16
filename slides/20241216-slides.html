@@ -388,6 +388,9 @@
       margin-right: 0; 
     }
   </style>
+  <script src="../site_libs/quarto-diagram/mermaid.min.js"></script>
+  <script src="../site_libs/quarto-diagram/mermaid-init.js"></script>
+  <link href="../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 </head>
 <body class="quarto-light">
   <div class="reveal">
@@ -1159,10 +1162,445 @@ Trevor F. Freeman
 <span id="cb37-20"><a></a><span class="bu">echo</span> <span class="st">"High quality BAM quick stats:"</span></span>
 <span id="cb37-21"><a></a><span class="ex">samtools</span> view <span class="at">-h</span> <span class="at">-q</span> 10 <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">samtools</span> flagstat <span class="at">-</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section></section>
+<section>
+<section id="run-docker-images-with-apptainer" class="title-slide slide level1 center">
+<h1>Run Docker images with Apptainer</h1>
+
+</section>
+<section id="what-is-docker" class="slide level2">
+<h2>What is Docker?</h2>
+<p>According to Docker:</p>
+<ul>
+<li>“The Industry-Leading Container Runtime”</li>
+<li>“Docker Engine is the industry’s de facto container runtime”</li>
+</ul>
+<div class="fragment">
+<p>Until recently Docker was nearly synonymous with containerization</p>
+<p>Still immensely popular – Borderline default containerization option</p>
+</div>
+<div class="fragment">
+<p>Terrible for HPCs – Almost always completely unavailable</p>
+</div>
+</section>
+
+<section id="apptainer-works-with-docker-images-1" class="slide level2">
+<h2>Apptainer works with Docker images</h2>
+<p>Simply use the correct URI</p>
+<p>Prepend images on Dockerhub or quay.io with <code>docker://</code> instead of our usual <code>https://</code></p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb38" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb38-1"><a></a><span class="co"># run samtools container from docker image</span></span>
+<span id="cb38-2"><a></a><span class="ex">apptainer</span> exec docker://quay.io/biocontainers/samtools:1.21--h50ea8bc_0 samtools head data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section></section>
+<section>
+<section id="where-to-find-remote-images" class="title-slide slide level1 center">
+<h1>Where to find remote images</h1>
+
+</section>
+<section id="remote-image-considerations" class="slide level2">
+<h2>Remote image considerations</h2>
+<p>Need to balance several factors:</p>
+<ul>
+<li>Reliability &amp; stability – Will the image be there the next time you try to pull it?</li>
+<li>Updates – Will new images be made available with updated versions of software?</li>
+<li>Accessibility – Is it easy to find and use the images when you need them? Are they reasonably sized?</li>
+<li>Security – Does the container do what you need it to do without any weird side effects?</li>
+</ul>
+</section>
+<section id="remote-image-sources" class="slide level2 smaller">
+<h2>Remote image sources</h2>
+<ol type="1">
+<li><p>Official image from software authors/maintainers</p>
+<ul>
+<li>Up to date and stable – Only as good as the maintainers</li>
+<li>Example: <a href="https://github.com/google/deepvariant/blob/r1.4/docs/deepvariant-quick-start.md#get-docker-image-models-and-test-datas">Google DeepVariant</a></li>
+</ul></li>
+</ol>
+<div class="fragment">
+<ol start="2" type="1">
+<li><p>Large, community driven resources – Especially for general software</p>
+<ul>
+<li>Highly stable</li>
+<li>Frequently updated</li>
+<li>Example: <a href="https://rocker-project.org/">Rocker project</a> for R environment</li>
+</ul></li>
+</ol>
+</div>
+<div class="fragment">
+<ol start="3" type="1">
+<li><p><a href="https://biocontainers.pro/">BioContainers</a> container registry</p>
+<ul>
+<li>Excellent resource for popular (and many unpopular) bioinformatics programs</li>
+<li>Many versions available and frequently updated</li>
+<li>Highly stable</li>
+</ul></li>
+</ol>
+</div>
+</section>
+<section id="other-image-sources" class="slide level2 smaller">
+<h2>Other image sources</h2>
+<ul>
+<li><p>Public repositories, e.g.&nbsp;other people’s images on <a href="https://hub.docker.com/">Docker Hub</a></p>
+<ul>
+<li>Limited reliability</li>
+<li>Minor security concerns</li>
+<li>No guaranteed updates</li>
+<li>Usually last resort</li>
+</ul></li>
+</ul>
+<div class="fragment">
+<ul>
+<li><p>Build custom image</p>
+<ul>
+<li><a href="https://apptainer.org/docs/user/1.2/build_a_container.html">Apptainer build</a> from <a href="https://apptainer.org/docs/user/1.2/definition_files.html">definition file</a></li>
+<li>Gives you the power to do almost anything – This is a pro and a con</li>
+<li>Only as straightforward as installing the software you need to containerize</li>
+</ul></li>
+</ul>
+</div>
+</section></section>
+<section>
+<section id="advanced-container-usage-run-rstudio-server-on-isaac-ng" class="title-slide slide level1 center">
+<h1>Advanced container usage: Run RStudio server on ISAAC-NG</h1>
+
+</section>
+<section id="containerized-rstudio-server-on-isaac-ng" class="slide level2">
+<h2>Containerized RStudio server on ISAAC-NG</h2>
+<p>Why?</p>
+<ul>
+<li>Avoid moving data on and off HPC</li>
+<li>Access more resources than local computer</li>
+<li>Run long jobs that would be difficult to run locally</li>
+</ul>
+<div class="fragment">
+<p>How?</p>
+<ul>
+<li>Use RStudio server image</li>
+<li>Write Slurm job submission script</li>
+<li>Expose port we can safely and securely access</li>
+</ul>
+</div>
+</section>
+<section id="rocker-project-slurm-script" class="slide level2">
+<h2>Rocker project Slurm script</h2>
+<p>Useful links from the Rocker project</p>
+<ul>
+<li><p><a href="https://rocker-project.org/use/singularity.html#importing-a-rocker-image">Rocker RStudio server image</a></p></li>
+<li><p><a href="https://rocker-project.org/use/singularity.html#slurm-job-script">Rocker singularity</a></p></li>
+</ul>
+<p>In the next several slides, we’ll build a Slurm job submission script based on the Rocker example script.</p>
+</section>
+<section id="rstudio-server-slurm-script-sbatch-headers" class="slide level2 smaller">
+<h2>RStudio server Slurm script – SBATCH headers</h2>
+<p>SBATCH headers control job submission configurations</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>rstudio_server.sh</strong></pre>
+</div>
+<div class="sourceCode" id="annotated-cell-39" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode bash"><span id="annotated-cell-39-1"><a href="#annotated-cell-39-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="annotated-cell-39-2"><a href="#annotated-cell-39-2"></a><span class="co">#SBATCH --job-name=rstudio_server</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-39-3" class="code-annotation-target"><a href="#annotated-cell-39-3"></a><span class="co">#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-39-4" class="code-annotation-target"><a href="#annotated-cell-39-4"></a><span class="co">#SBATCH --output=/dev/null</span></span>
+<span id="annotated-cell-39-5"><a href="#annotated-cell-39-5"></a><span class="co">#SBATCH --signal=USR2</span></span>
+<span id="annotated-cell-39-6"><a href="#annotated-cell-39-6"></a><span class="co">#SBATCH --account=ACF-UTK0011</span></span>
+<span id="annotated-cell-39-7"><a href="#annotated-cell-39-7"></a><span class="co">#SBATCH --partition=short</span></span>
+<span id="annotated-cell-39-8"><a href="#annotated-cell-39-8"></a><span class="co">#SBATCH --qos=short</span></span>
+<span id="annotated-cell-39-9"><a href="#annotated-cell-39-9"></a><span class="co">#SBATCH --cpus-per-task=1</span></span>
+<span id="annotated-cell-39-10"><a href="#annotated-cell-39-10"></a><span class="co">#SBATCH --mem=2GB</span></span>
+<span id="annotated-cell-39-11"><a href="#annotated-cell-39-11"></a><span class="co">#SBATCH --time=00-00:15:00</span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-39" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-39" data-code-lines="3" data-code-annotation="1">We log useful information about how to access our RStudio server session into the stderr file.</span>
+</dd>
+<dt data-target-cell="annotated-cell-39" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-39" data-code-lines="4" data-code-annotation="2">We don’t need anything from stdout.</span>
+</dd>
+</dl>
+</section>
+<section id="rstudio-server-slurm-script-tmp-directory" class="slide level2 smaller">
+<h2>RStudio server Slurm script – tmp directory</h2>
+<p>Create a temporary directory specific to your user session so that your specific temporary files don’t clash those of other users.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>rstudio_server.sh</strong></pre>
+</div>
+<div class="sourceCode" id="cb39" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb39-1"><a></a><span class="co"># Create temporary directory to be populated with directories to bind-mount in the container</span></span>
+<span id="cb39-2"><a></a><span class="co"># where writable file systems are necessary. Adjust path as appropriate for your computing environment.</span></span>
+<span id="cb39-3"><a></a><span class="va">workdir</span><span class="op">=</span><span class="va">$(</span><span class="fu">mktemp</span> <span class="at">-d</span><span class="va">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="rstudio-server-slurm-script-configure-r-session" class="slide level2 smaller">
+<h2>RStudio server Slurm script – Configure R session</h2>
+<p>Configure R session to use R packages/libraries that won’t conflict with those from another R session and installation you have.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>rstudio_server.sh</strong></pre>
+</div>
+<div class="sourceCode" id="annotated-cell-41" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode bash"><span id="annotated-cell-41-1"><a href="#annotated-cell-41-1"></a><span class="co"># Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with</span></span>
+<span id="annotated-cell-41-2"><a href="#annotated-cell-41-2"></a><span class="co"># personal libraries from any R installation in the host environment</span></span>
+<span id="annotated-cell-41-3"><a href="#annotated-cell-41-3"></a><span class="fu">cat</span> <span class="op">&gt;</span> <span class="va">${workdir}</span>/rsession.sh <span class="op">&lt;&lt;"END"</span></span>
+<span id="annotated-cell-41-4"><a href="#annotated-cell-41-4"></a><span class="st">#!/bin/sh</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-41" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-41-5" class="code-annotation-target"><a href="#annotated-cell-41-5"></a><span class="st">export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2</span></span>
+<span id="annotated-cell-41-6"><a href="#annotated-cell-41-6"></a><span class="st">mkdir -p "${R_LIBS_USER}"</span></span>
+<span id="annotated-cell-41-7"><a href="#annotated-cell-41-7"></a><span class="st">## custom Rprofile &amp; Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-41" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-41-8" class="code-annotation-target"><a href="#annotated-cell-41-8"></a><span class="st"># export R_PROFILE_USER=/path/to/Rprofile</span></span>
+<span id="annotated-cell-41-9"><a href="#annotated-cell-41-9"></a><span class="st"># export R_ENVIRON_USER=/path/to/Renviron</span></span>
+<span id="annotated-cell-41-10"><a href="#annotated-cell-41-10"></a><span class="st">exec /usr/lib/rstudio-server/bin/rsession "${@}"</span></span>
+<span id="annotated-cell-41-11"><a href="#annotated-cell-41-11"></a><span class="op">END</span></span>
+<span id="annotated-cell-41-12"><a href="#annotated-cell-41-12"></a></span>
+<span id="annotated-cell-41-13"><a href="#annotated-cell-41-13"></a><span class="co"># make R session script executable and configure it to be bound into the container at runtime</span></span>
+<span id="annotated-cell-41-14"><a href="#annotated-cell-41-14"></a><span class="fu">chmod</span> +x <span class="va">${workdir}</span>/rsession.sh</span>
+<span id="annotated-cell-41-15"><a href="#annotated-cell-41-15"></a><span class="bu">export</span> <span class="va">SINGULARITY_BIND</span><span class="op">=</span><span class="st">"</span><span class="va">${workdir}</span><span class="st">/rsession.sh:/etc/rstudio/rsession.sh"</span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-41" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-41" data-code-lines="5" data-code-annotation="1">This uses the <code>"${HOME}"</code> directory by default. If you plan to use this for real analyses it’s not a bad idea to set this to use your <code>"${SCRATCHDIR}"</code>.</span>
+</dd>
+<dt data-target-cell="annotated-cell-41" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-41" data-code-lines="8,9" data-code-annotation="2">If you’re a highly knowledgeable R user, set these variables to have greater control over the profile and environment used in your RStudio session.</span>
+</dd>
+</dl>
+</section>
+<section id="rstudio-server-slurm-script-do-not-suspend-idle-sessions" class="slide level2 smaller">
+<h2>RStudio server Slurm script – Do not suspend idle sessions</h2>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>rstudio_server.sh</strong></pre>
+</div>
+<div class="sourceCode" id="cb40" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb40-1"><a></a><span class="co"># Do not suspend idle sessions.</span></span>
+<span id="cb40-2"><a></a><span class="co"># Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf</span></span>
+<span id="cb40-3"><a></a><span class="co"># https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126</span></span>
+<span id="cb40-4"><a></a><span class="bu">export</span> <span class="va">SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT</span><span class="op">=</span>0</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="rstudio-server-slurm-script-authorization" class="slide level2 smaller">
+<h2>RStudio server Slurm script – Authorization</h2>
+<p>Require a username and password for additional security</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>rstudio_server.sh</strong></pre>
+</div>
+<div class="sourceCode" id="annotated-cell-43" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode bash"><span id="annotated-cell-43-1"><a href="#annotated-cell-43-1"></a><span class="co"># set user ID and password for RStudio server</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-43-2" class="code-annotation-target"><a href="#annotated-cell-43-2"></a><span class="bu">export</span> <span class="va">SINGULARITYENV_USER</span><span class="op">=</span><span class="va">$(</span><span class="fu">whoami</span><span class="va">)</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-43-3" class="code-annotation-target"><a href="#annotated-cell-43-3"></a><span class="bu">export</span> <span class="va">SINGULARITYENV_PASSWORD</span><span class="op">=</span><span class="va">$(</span><span class="ex">openssl</span> rand <span class="at">-base64</span> 15<span class="va">)</span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-43" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="2" data-code-annotation="1">Username is your ISAAC username.</span>
+</dd>
+<dt data-target-cell="annotated-cell-43" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="3" data-code-annotation="2">Password is randomly generated. You can change this to a password of your choosing if desired, but be careful about checking this into version control, especially if it’s one of your usual passwords. I recommend just leaving this as a randomly generated password – we’ll see in a second that the password isn’t that important.</span>
+</dd>
+</dl>
+</section>
+<section id="rstudio-server-slurm-script-get-open-port" class="slide level2 smaller">
+<h2>RStudio server Slurm script – Get open port</h2>
+<p>We have to have an open port to expose our RStudio server. Since ISAAC is a shared resource, many of the ports will likely be taken, so we have to find and use an available one.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>rstudio_server.sh</strong></pre>
+</div>
+<div class="sourceCode" id="cb41" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb41-1"><a></a><span class="co"># get unused socket per https://unix.stackexchange.com/a/132524</span></span>
+<span id="cb41-2"><a></a><span class="co"># tiny race condition between the python &amp; singularity commands</span></span>
+<span id="cb41-3"><a></a><span class="bu">readonly</span> <span class="va">PORT</span><span class="op">=</span><span class="va">$(</span><span class="ex">python3</span> <span class="at">-c</span> <span class="st">'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()'</span><span class="va">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="rstudio-server-slurm-script-write-session-usage-directions" class="slide level2 smaller">
+<h2>RStudio server Slurm script – Write session usage directions</h2>
+<p>Write RStudio server session usage directions to stderr. We will access these in the <code>error</code> file specified in the SBATCH header.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>rstudio_server.sh</strong></pre>
+</div>
+<div class="sourceCode" id="cb42" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb42-1"><a></a><span class="co"># write session usage information to stderr</span></span>
+<span id="cb42-2"><a></a><span class="fu">cat</span> <span class="dv">1</span><span class="op">&gt;&amp;</span><span class="dv">2</span> <span class="op">&lt;&lt;END</span></span>
+<span id="cb42-3"><a></a><span class="st">1. SSH tunnel from your workstation using the following command:</span></span>
+<span id="cb42-4"><a></a></span>
+<span id="cb42-5"><a></a><span class="st">   ssh -N -L 8787:</span><span class="va">${HOSTNAME}</span><span class="st">:</span><span class="va">${PORT}</span><span class="st"> </span><span class="va">${SINGULARITYENV_USER}</span><span class="st">@login.isaac.utk.edu</span></span>
+<span id="cb42-6"><a></a></span>
+<span id="cb42-7"><a></a><span class="st">   and point your web browser to http://localhost:8787</span></span>
+<span id="cb42-8"><a></a></span>
+<span id="cb42-9"><a></a><span class="st">2. log in to RStudio Server using the following credentials:</span></span>
+<span id="cb42-10"><a></a></span>
+<span id="cb42-11"><a></a><span class="st">   user: </span><span class="va">${SINGULARITYENV_USER}</span></span>
+<span id="cb42-12"><a></a><span class="st">   password: </span><span class="va">${SINGULARITYENV_PASSWORD}</span></span>
+<span id="cb42-13"><a></a></span>
+<span id="cb42-14"><a></a><span class="st">When done using RStudio Server, terminate the job by:</span></span>
+<span id="cb42-15"><a></a></span>
+<span id="cb42-16"><a></a><span class="st">1. Exit the RStudio Session ("power" button in the top right corner of the RStudio window)</span></span>
+<span id="cb42-17"><a></a><span class="st">2. Issue the following command on the login node:</span></span>
+<span id="cb42-18"><a></a></span>
+<span id="cb42-19"><a></a><span class="st">      scancel -f </span><span class="va">${SLURM_JOB_ID}</span></span>
+<span id="cb42-20"><a></a><span class="op">END</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="rstudio-server-slurm-script-launch-rstudio-server" class="slide level2 smaller">
+<h2>RStudio server Slurm script – Launch RStudio server</h2>
+<p>Here we actually run the RStudio server command that starts the RStudio server session we will connect to.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>rstudio_server.sh</strong></pre>
+</div>
+<div class="sourceCode" id="cb43" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb43-1"><a></a><span class="co"># run RStudio Server from apptainer image</span></span>
+<span id="cb43-2"><a></a><span class="bu">readonly</span> <span class="va">rstudio_server_img_uri</span><span class="op">=</span><span class="st">"docker://rocker/rstudio:4.4.2"</span></span>
+<span id="cb43-3"><a></a><span class="ex">apptainer</span> exec <span class="dt">\</span></span>
+<span id="cb43-4"><a></a>  <span class="at">--cleanenv</span> <span class="dt">\</span></span>
+<span id="cb43-5"><a></a>  <span class="at">--scratch</span> /run,/tmp,/var/lib/rstudio-server <span class="dt">\</span></span>
+<span id="cb43-6"><a></a>  <span class="at">--workdir</span> <span class="va">${workdir}</span> <span class="dt">\</span></span>
+<span id="cb43-7"><a></a>  <span class="st">"</span><span class="va">${rstudio_server_img_uri}</span><span class="st">"</span> <span class="dt">\</span></span>
+<span id="cb43-8"><a></a>  rserver <span class="at">--www-port</span> <span class="va">${PORT}</span> <span class="dt">\</span></span>
+<span id="cb43-9"><a></a>  <span class="at">--auth-none</span><span class="op">=</span>0 <span class="dt">\</span></span>
+<span id="cb43-10"><a></a>  <span class="at">--auth-pam-helper-path</span><span class="op">=</span>pam-helper <span class="dt">\</span></span>
+<span id="cb43-11"><a></a>  <span class="at">--server-user</span><span class="op">=</span><span class="va">$(</span><span class="fu">whoami</span><span class="va">)</span> <span class="dt">\</span></span>
+<span id="cb43-12"><a></a>  <span class="at">--auth-stay-signed-in-days</span><span class="op">=</span>30 <span class="dt">\</span></span>
+<span id="cb43-13"><a></a>  <span class="at">--auth-timeout-minutes</span><span class="op">=</span>0 <span class="dt">\</span></span>
+<span id="cb43-14"><a></a>  <span class="at">--rsession-path</span><span class="op">=</span>/etc/rstudio/rsession.sh</span>
+<span id="cb43-15"><a></a><span class="bu">printf</span> <span class="st">'rserver exited'</span> <span class="dv">1</span><span class="op">&gt;&amp;</span><span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="rstudio-server-slurm-script-full-script" class="slide level2 smaller scrollable">
+<h2>RStudio server Slurm script – Full script</h2>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>rstudio_server.sh</strong></pre>
+</div>
+<div class="sourceCode" id="cb44" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb44-1"><a></a><span class="co">#!/bin/bash</span></span>
+<span id="cb44-2"><a></a><span class="co">#SBATCH --job-name=rstudio_server</span></span>
+<span id="cb44-3"><a></a><span class="co">#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err</span></span>
+<span id="cb44-4"><a></a><span class="co">#SBATCH --output=/dev/null</span></span>
+<span id="cb44-5"><a></a><span class="co">#SBATCH --signal=USR2</span></span>
+<span id="cb44-6"><a></a><span class="co">#SBATCH --account=ACF-UTK0011</span></span>
+<span id="cb44-7"><a></a><span class="co">#SBATCH --partition=short</span></span>
+<span id="cb44-8"><a></a><span class="co">#SBATCH --qos=short</span></span>
+<span id="cb44-9"><a></a><span class="co">#SBATCH --cpus-per-task=1</span></span>
+<span id="cb44-10"><a></a><span class="co">#SBATCH --mem=2GB</span></span>
+<span id="cb44-11"><a></a><span class="co">#SBATCH --time=00-00:15:00</span></span>
+<span id="cb44-12"><a></a></span>
+<span id="cb44-13"><a></a><span class="co"># Create temporary directory to be populated with directories to bind-mount in the container</span></span>
+<span id="cb44-14"><a></a><span class="co"># where writable file systems are necessary. Adjust path as appropriate for your computing environment.</span></span>
+<span id="cb44-15"><a></a><span class="va">workdir</span><span class="op">=</span><span class="va">$(</span><span class="fu">mktemp</span> <span class="at">-d</span><span class="va">)</span></span>
+<span id="cb44-16"><a></a></span>
+<span id="cb44-17"><a></a><span class="co"># Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with</span></span>
+<span id="cb44-18"><a></a><span class="co"># personal libraries from any R installation in the host environment</span></span>
+<span id="cb44-19"><a></a><span class="fu">cat</span> <span class="op">&gt;</span> <span class="va">${workdir}</span>/rsession.sh <span class="op">&lt;&lt;"END"</span></span>
+<span id="cb44-20"><a></a><span class="st">#!/bin/sh</span></span>
+<span id="cb44-21"><a></a><span class="st">export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2</span></span>
+<span id="cb44-22"><a></a><span class="st">mkdir -p "${R_LIBS_USER}"</span></span>
+<span id="cb44-23"><a></a><span class="st">## custom Rprofile &amp; Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)</span></span>
+<span id="cb44-24"><a></a><span class="st"># export R_PROFILE_USER=/path/to/Rprofile</span></span>
+<span id="cb44-25"><a></a><span class="st"># export R_ENVIRON_USER=/path/to/Renviron</span></span>
+<span id="cb44-26"><a></a><span class="st">exec /usr/lib/rstudio-server/bin/rsession "${@}"</span></span>
+<span id="cb44-27"><a></a><span class="op">END</span></span>
+<span id="cb44-28"><a></a></span>
+<span id="cb44-29"><a></a><span class="co"># make R session script executable and configure it to be bound into the container at runtime</span></span>
+<span id="cb44-30"><a></a><span class="fu">chmod</span> +x <span class="va">${workdir}</span>/rsession.sh</span>
+<span id="cb44-31"><a></a><span class="bu">export</span> <span class="va">SINGULARITY_BIND</span><span class="op">=</span><span class="st">"</span><span class="va">${workdir}</span><span class="st">/rsession.sh:/etc/rstudio/rsession.sh"</span></span>
+<span id="cb44-32"><a></a></span>
+<span id="cb44-33"><a></a><span class="co"># Do not suspend idle sessions.</span></span>
+<span id="cb44-34"><a></a><span class="co"># Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf</span></span>
+<span id="cb44-35"><a></a><span class="co"># https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126</span></span>
+<span id="cb44-36"><a></a><span class="bu">export</span> <span class="va">SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT</span><span class="op">=</span>0</span>
+<span id="cb44-37"><a></a></span>
+<span id="cb44-38"><a></a><span class="co"># set user ID and password for RStudio server</span></span>
+<span id="cb44-39"><a></a><span class="bu">export</span> <span class="va">SINGULARITYENV_USER</span><span class="op">=</span><span class="va">$(</span><span class="fu">whoami</span><span class="va">)</span></span>
+<span id="cb44-40"><a></a><span class="bu">export</span> <span class="va">SINGULARITYENV_PASSWORD</span><span class="op">=</span><span class="va">$(</span><span class="ex">openssl</span> rand <span class="at">-base64</span> 15<span class="va">)</span></span>
+<span id="cb44-41"><a></a></span>
+<span id="cb44-42"><a></a><span class="co"># get unused socket per https://unix.stackexchange.com/a/132524</span></span>
+<span id="cb44-43"><a></a><span class="co"># tiny race condition between the python &amp; singularity commands</span></span>
+<span id="cb44-44"><a></a><span class="bu">readonly</span> <span class="va">PORT</span><span class="op">=</span><span class="va">$(</span><span class="ex">python3</span> <span class="at">-c</span> <span class="st">'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()'</span><span class="va">)</span></span>
+<span id="cb44-45"><a></a></span>
+<span id="cb44-46"><a></a><span class="co"># write session usage information to stderr</span></span>
+<span id="cb44-47"><a></a><span class="fu">cat</span> <span class="dv">1</span><span class="op">&gt;&amp;</span><span class="dv">2</span> <span class="op">&lt;&lt;END</span></span>
+<span id="cb44-48"><a></a><span class="st">1. SSH tunnel from your workstation using the following command:</span></span>
+<span id="cb44-49"><a></a></span>
+<span id="cb44-50"><a></a><span class="st">   ssh -N -L 8787:</span><span class="va">${HOSTNAME}</span><span class="st">:</span><span class="va">${PORT}</span><span class="st"> </span><span class="va">${SINGULARITYENV_USER}</span><span class="st">@login.isaac.utk.edu</span></span>
+<span id="cb44-51"><a></a></span>
+<span id="cb44-52"><a></a><span class="st">   and point your web browser to http://localhost:8787</span></span>
+<span id="cb44-53"><a></a></span>
+<span id="cb44-54"><a></a><span class="st">2. log in to RStudio Server using the following credentials:</span></span>
+<span id="cb44-55"><a></a></span>
+<span id="cb44-56"><a></a><span class="st">   user: </span><span class="va">${SINGULARITYENV_USER}</span></span>
+<span id="cb44-57"><a></a><span class="st">   password: </span><span class="va">${SINGULARITYENV_PASSWORD}</span></span>
+<span id="cb44-58"><a></a></span>
+<span id="cb44-59"><a></a><span class="st">When done using RStudio Server, terminate the job by:</span></span>
+<span id="cb44-60"><a></a></span>
+<span id="cb44-61"><a></a><span class="st">1. Exit the RStudio Session ("power" button in the top right corner of the RStudio window)</span></span>
+<span id="cb44-62"><a></a><span class="st">2. Issue the following command on the login node:</span></span>
+<span id="cb44-63"><a></a></span>
+<span id="cb44-64"><a></a><span class="st">      scancel -f </span><span class="va">${SLURM_JOB_ID}</span></span>
+<span id="cb44-65"><a></a><span class="op">END</span></span>
+<span id="cb44-66"><a></a></span>
+<span id="cb44-67"><a></a><span class="co"># run RStudio Server from apptainer image</span></span>
+<span id="cb44-68"><a></a><span class="bu">readonly</span> <span class="va">rstudio_server_img_uri</span><span class="op">=</span><span class="st">"docker://rocker/rstudio:4.4.2"</span></span>
+<span id="cb44-69"><a></a><span class="ex">apptainer</span> exec <span class="dt">\</span></span>
+<span id="cb44-70"><a></a>  <span class="at">--cleanenv</span> <span class="dt">\</span></span>
+<span id="cb44-71"><a></a>  <span class="at">--scratch</span> /run,/tmp,/var/lib/rstudio-server <span class="dt">\</span></span>
+<span id="cb44-72"><a></a>  <span class="at">--workdir</span> <span class="va">${workdir}</span> <span class="dt">\</span></span>
+<span id="cb44-73"><a></a>  <span class="st">"</span><span class="va">${rstudio_server_img_uri}</span><span class="st">"</span> <span class="dt">\</span></span>
+<span id="cb44-74"><a></a>  rserver <span class="at">--www-port</span> <span class="va">${PORT}</span> <span class="dt">\</span></span>
+<span id="cb44-75"><a></a>  <span class="at">--auth-none</span><span class="op">=</span>0 <span class="dt">\</span></span>
+<span id="cb44-76"><a></a>  <span class="at">--auth-pam-helper-path</span><span class="op">=</span>pam-helper <span class="dt">\</span></span>
+<span id="cb44-77"><a></a>  <span class="at">--server-user</span><span class="op">=</span><span class="va">$(</span><span class="fu">whoami</span><span class="va">)</span> <span class="dt">\</span></span>
+<span id="cb44-78"><a></a>  <span class="at">--auth-stay-signed-in-days</span><span class="op">=</span>30 <span class="dt">\</span></span>
+<span id="cb44-79"><a></a>  <span class="at">--auth-timeout-minutes</span><span class="op">=</span>0 <span class="dt">\</span></span>
+<span id="cb44-80"><a></a>  <span class="at">--rsession-path</span><span class="op">=</span>/etc/rstudio/rsession.sh</span>
+<span id="cb44-81"><a></a><span class="bu">printf</span> <span class="st">'rserver exited'</span> <span class="dv">1</span><span class="op">&gt;&amp;</span><span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="run-rstudio-server-slurm-job" class="slide level2 smaller">
+<h2>Run RStudio server Slurm job</h2>
+<ol type="1">
+<li>Submit job to Slurm scheduler</li>
+</ol>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb45" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb45-1"><a></a><span class="ex">sbatch</span> rstudio_server.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="fragment">
+<ol start="2" type="1">
+<li>Print captured usage info from job error file</li>
+</ol>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb46" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb46-1"><a></a><span class="fu">cat</span> .cache/sbatch_logs/<span class="op">&lt;</span>job ID<span class="op">&gt;</span>_-_rstudio_server.err</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div class="fragment">
+<ol start="3" type="1">
+<li>Open a new terminal session on your <strong>local</strong> machine – NOT ISAAC-NG. Run the <code>ssh</code> command from the error file. Authenticate and leave the SSH session open.</li>
+</ol>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb47" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb47-1"><a></a><span class="fu">ssh</span> <span class="at">-N</span> <span class="at">-L</span> 8787:<span class="op">&lt;</span>host<span class="op">&gt;</span>:<span class="op">&lt;</span>port<span class="op">&gt;</span> <span class="op">&lt;</span>user<span class="op">&gt;</span>@login.isaac.utk.edu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div class="fragment">
+<ol start="4" type="1">
+<li>Open browser window and connect to RStudio server URL: http://localhost:8787/</li>
+</ol>
+<p>Authenticate using the username and password listed in your error file.</p>
 
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
+</div>
 </div>
 </div>
 </section></section>
