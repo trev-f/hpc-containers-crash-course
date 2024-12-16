@@ -6,6 +6,16 @@ institute: "UTIA Genomics Center"
 format: revealjs
 ---
 
+# Before we get started
+
+## UTK bioinformatics useful links
+
+* [UTK Bioinformatics Consulting Services](https://bioinfo.utk.edu/) -- A collaborative group of genomics and bioinformatics analysts and scientific computing specialists aimed at providing a range of research support and training to faculty, staff, and students.
+* [UTK Bioinformatics Newsletter](https://tiny.utk.edu/BioinformaticsNewsletter) -- A monthly newsletter about the latest bioinformatics and computational biology research at the University of Tennessee.
+* [Bioinformatics office hours](https://oit.utk.edu/hpsc/bioinformatics-computing-support/)
+* [High Performance & Scientific Computing](https://oit.utk.edu/hpsc/)
+* [UT Genomics Core](https://dna.utk.edu/)
+
 # Setup workshop environment
 
 ## Login to ISAAC-NG
