@@ -16,6 +16,15 @@ format: revealjs
 * [High Performance & Scientific Computing](https://oit.utk.edu/hpsc/)
 * [UT Genomics Core](https://dna.utk.edu/)
 
+## Workshop goals
+
+* Learn to run software on ISAAC-NG using Apptainer containers
+* Run CLI software from Apptainer containers
+* Strategies to simplify container usage
+* Run containers from Docker images on ISAAC-NG
+* Provide resources for finding bioinformatics container images
+* Run and connect to containerized RStudio server on ISAAC-NG
+
 # Setup workshop environment
 
 ## Login to ISAAC-NG
