@@ -22,8 +22,7 @@ This repository consists of workshop information and the source files used to bu
 > We intend for this workshop to include as much discussion as possible, and having as many people attend in person as possible is much better for generating discussion.
 > Of course, we want this event to be inclusive and archived for people who are unable to attend a synchronous session, so we are offering a Zoom session with plans to host the recording.
 
-[COMING SOON]
-[Zoom link -- Synchronous session]()
+[Zoom link -- Synchronous session](https://tennessee.zoom.us/j/86779798088)
 
 [COMING SOON]
 [Zoom link -- Hosted recording]()
