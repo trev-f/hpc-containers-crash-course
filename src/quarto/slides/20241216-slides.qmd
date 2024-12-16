@@ -338,7 +338,7 @@ apptainer exec samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_r
 ::: {.callout-note title="apptainer exec"}
 Running this command is completely independent from how the container is setup.
 
-If 1) the software is available in the container and 2) the file can be accessed in the container, the command should run
+If 1) the software is available in the container and 2) the file can be accessed in the container, the command should run.
 :::
 
 ## Run Apptainer conclusions -- Useful commands
@@ -481,7 +481,7 @@ apptainer exec samtools_1-21.sif samtools view -h -q 10 "${input_bam}" | apptain
 Numerous explicit uses of `apptainer pull/exec samtools_1-21.sif`
 
 * Difficult to maintain and error prone -- What if we want to update to Samtools v1.22?
-* Verbose -- Numerous calls to `apptainer exec samtools_1-21.sif` obscure the program logic
+* Verbose -- Repetition obscures program logic
 
 ## Simplify script -- Use variable for image path {.smaller}
 
@@ -618,6 +618,28 @@ samtools view -c -q 10 "${input_bam}"
 echo "High quality BAM quick stats:"
 samtools view -h -q 10 "${input_bam}" | samtools flagstat -
 ```
+
+## Summarize abstractions {.smaller}
+
+* Variable image path
+  * Simple -- makes container usage obvious
+  * Doesn't require internet access if local image already exists
+  * Requires explicit image pull
+  * Maintain remote image URI and local image path
+
+. . .
+
+* Execute directly from URI
+  * Maintain only remote image URI
+  * No explicit image pull step
+  * Requires internet access even if image already pulled locally
+
+. . .
+
+* "Load" software with function
+  * Makes program logic easier to see
+  * May be some edge cases
+  * Other users may be unaware container is used
 
 # Run Docker images with Apptainer
 
@@ -991,6 +1013,49 @@ ssh -N -L 8787:<host>:<port> <user>@login.isaac.utk.edu
 
 . . .
 
-4. Open browser window and connect to RStudio server URL: http://localhost:8787/
+4. Open browser window and connect to RStudio server URL: <http://localhost:8787/>
 
 Authenticate using the username and password listed in your error file.
+
+# Conclusion
+
+## Workshop goals -- How do we feel?
+
+* Learn to run software on ISAAC-NG using Apptainer containers
+* Run CLI software from Apptainer containers
+* Strategies to simplify container usage
+* Run containers from Docker images on ISAAC-NG
+* Provide resources for finding bioinformatics container images
+* Run and connect to containerized RStudio server on ISAAC-NG
+
+## When would you use containers? {.smaller}
+
+. . .
+
+Try out new version of software
+
+. . .
+
+Replace Conda
+
+* No more environment headaches
+* No need to setup channels properly
+* No more accidentally installing software into wrong environment
+* No more version clashes
+
+. . .
+
+Share scripts
+
+* If it works for you, it should work for your collaborators
+* If 1) the software is available in the container and 2) the file can be accessed in the container, the command should run.
+
+. . .
+
+Workflows/pipelines
+
+* Containers + atomized workflow steps are the perfect match
+
+# Final questions, comments, or suggestions?
+
+Reach out: <tfreem10@utk.edu>
