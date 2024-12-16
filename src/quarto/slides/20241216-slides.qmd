@@ -378,7 +378,7 @@ apptainer exec samtools_1-21.sif samtools view -c data/alignments/wt_antiflag_ip
 Quick alignment stats -- `samtools flagstat <input.bam>`
 
 ```{.bash filename="Terminal"}
-apptainer exec samtools_1-21.sif samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam
+apptainer exec samtools_1-21.sif samtools flagstat data/alignments/wt_antiflag_ip1_rep1.bam
 ```
 
 ## Get info about high quality alignments {.smaller}
@@ -410,7 +410,7 @@ We don't have the `samtools` command available on our OS, so this fails.
 
 ## Get high quality alignments quick stats
 
-Pipe out of one container and into another:
+Pipe out of one container and into another
 
 ```{.bash filename="Terminal"}
 apptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | apptainer exec samtools_1-21.sif samtools flagstat -
