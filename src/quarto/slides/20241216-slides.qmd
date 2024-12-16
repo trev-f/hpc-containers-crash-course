@@ -478,8 +478,8 @@ apptainer exec samtools_1-21.sif samtools view -h -q 10 "${input_bam}" | apptain
 
 Numerous explicit uses of `apptainer pull/exec samtools_1-21.sif`
 
-* Difficult to maintain -- What if we want to update to Samtools v1.22?
-* Error prone
+* Difficult to maintain and error prone -- What if we want to update to Samtools v1.22?
+* Verbose -- Numerous calls to `apptainer exec samtools_1-21.sif` obscure the program logic
 
 ## Simplify script -- Use variable for image path {.smaller}
 
@@ -586,6 +586,7 @@ Since `samtools` is a function and not an executable file, there will be situati
 There could also be some scenarios where passing arguments to the `samtools` command in the container through the `samtools` function doesn't behave as expected.
 
 Long story short: beware of edge cases.
+This abstraction is best for experienced script writers or very straightforward use cases.
 :::
 
 ## Simplify script -- Use function to simulate "loading" software {.smaller}
