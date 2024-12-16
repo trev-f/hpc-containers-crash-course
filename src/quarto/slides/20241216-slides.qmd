@@ -450,6 +450,8 @@ bash compute_bam_stats.sh data/alignments/wt_antiflag_ip1_rep1.bam
 
 # Simplify Apptainer usage
 
+Abstract away details to simplify maintenance and understanding of the script.
+
 ## Script is full of duplicated code {.smaller}
 
 ```{.bash filename="compute_bam_stats.sh"}
