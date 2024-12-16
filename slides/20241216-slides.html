@@ -413,6 +413,32 @@ Trevor F. Freeman
   <p class="date">2024-12-16</p>
 </section>
 <section>
+<section id="before-we-get-started" class="title-slide slide level1 center">
+<h1>Before we get started</h1>
+
+</section>
+<section id="utk-bioinformatics-useful-links" class="slide level2">
+<h2>UTK bioinformatics useful links</h2>
+<ul>
+<li><a href="https://bioinfo.utk.edu/">UTK Bioinformatics Consulting Services</a> – A collaborative group of genomics and bioinformatics analysts and scientific computing specialists aimed at providing a range of research support and training to faculty, staff, and students.</li>
+<li><a href="https://tiny.utk.edu/BioinformaticsNewsletter">UTK Bioinformatics Newsletter</a> – A monthly newsletter about the latest bioinformatics and computational biology research at the University of Tennessee.</li>
+<li><a href="https://oit.utk.edu/hpsc/bioinformatics-computing-support/">Bioinformatics office hours</a></li>
+<li><a href="https://oit.utk.edu/hpsc/">High Performance &amp; Scientific Computing</a></li>
+<li><a href="https://dna.utk.edu/">UT Genomics Core</a></li>
+</ul>
+</section>
+<section id="workshop-goals" class="slide level2">
+<h2>Workshop goals</h2>
+<ul>
+<li>Learn to run software on ISAAC-NG using Apptainer containers</li>
+<li>Run CLI software from Apptainer containers</li>
+<li>Strategies to simplify container usage</li>
+<li>Run containers from Docker images on ISAAC-NG</li>
+<li>Provide resources for finding bioinformatics container images</li>
+<li>Run and connect to containerized RStudio server on ISAAC-NG</li>
+</ul>
+</section></section>
+<section>
 <section id="setup-workshop-environment" class="title-slide slide level1 center">
 <h1>Setup workshop environment</h1>
 
@@ -722,7 +748,7 @@ Trevor F. Freeman
 </div>
 </div>
 <div class="fragment">
-<p>Software available on the ISAAC-NG host OS may not be available in the container</p>
+<p>Software available on the ISAAC-NG host OS is not available in the container</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Apptainer shell</strong></pre>
@@ -825,7 +851,7 @@ Trevor F. Freeman
 </div>
 <div class="callout-content">
 <p>Running this command is completely independent from how the container is setup.</p>
-<p>If 1) the software is available in the container and 2) the file can be accessed in the container, the command should run</p>
+<p>If 1) the software is available in the container and 2) the file can be accessed in the container, the command should run.</p>
 </div>
 </div>
 </div>
@@ -884,7 +910,7 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb25" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools view <span class="at">-c</span> data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb25" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a></a><span class="ex">apptainer</span> exec samtools_1-21.sif samtools flagstat data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </section>
@@ -927,7 +953,7 @@ Trevor F. Freeman
 </section>
 <section id="get-high-quality-alignments-quick-stats" class="slide level2">
 <h2>Get high quality alignments quick stats</h2>
-<p>Pipe out of one container and into another:</p>
+<p>Pipe out of one container and into another</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
@@ -974,7 +1000,7 @@ Trevor F. Freeman
 <section>
 <section id="simplify-apptainer-usage" class="title-slide slide level1 center">
 <h1>Simplify Apptainer usage</h1>
-
+<p>Abstract away details to simplify maintenance and understanding of the script.</p>
 </section>
 <section id="script-is-full-of-duplicated-code" class="slide level2 smaller">
 <h2>Script is full of duplicated code</h2>
@@ -1006,8 +1032,8 @@ Trevor F. Freeman
 </div>
 <p>Numerous explicit uses of <code>apptainer pull/exec samtools_1-21.sif</code></p>
 <ul>
-<li>Difficult to maintain – What if we want to update to Samtools v1.22?</li>
-<li>Error prone</li>
+<li>Difficult to maintain and error prone – What if we want to update to Samtools v1.22?</li>
+<li>Verbose – Repetition obscures program logic</li>
 </ul>
 </section>
 <section id="simplify-script-use-variable-for-image-path" class="slide level2 smaller">
@@ -1126,7 +1152,7 @@ Trevor F. Freeman
 </div>
 <div class="callout-content">
 <p>The abstraction makes this method powerful and expressive, but it introduces some overhead. Since <code>samtools</code> is a function and not an executable file, there will be situations in which it doesn’t behave as running the typical command. There could also be some scenarios where passing arguments to the <code>samtools</code> command in the container through the <code>samtools</code> function doesn’t behave as expected.</p>
-<p>Long story short: beware of edge cases.</p>
+<p>Long story short: beware of edge cases. This abstraction is best for experienced script writers or very straightforward use cases.</p>
 </div>
 </div>
 </div>
@@ -1161,6 +1187,38 @@ Trevor F. Freeman
 <span id="cb37-19"><a></a><span class="ex">samtools</span> view <span class="at">-c</span> <span class="at">-q</span> 10 <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span></span>
 <span id="cb37-20"><a></a><span class="bu">echo</span> <span class="st">"High quality BAM quick stats:"</span></span>
 <span id="cb37-21"><a></a><span class="ex">samtools</span> view <span class="at">-h</span> <span class="at">-q</span> 10 <span class="st">"</span><span class="va">${input_bam}</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">samtools</span> flagstat <span class="at">-</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="summarize-abstractions" class="slide level2 smaller">
+<h2>Summarize abstractions</h2>
+<ul>
+<li>Variable image path
+<ul>
+<li>Simple – makes container usage obvious</li>
+<li>Doesn’t require internet access if local image already exists</li>
+<li>Requires explicit image pull</li>
+<li>Maintain remote image URI and local image path</li>
+</ul></li>
+</ul>
+<div class="fragment">
+<ul>
+<li>Execute directly from URI
+<ul>
+<li>Maintain only remote image URI</li>
+<li>No explicit image pull step</li>
+<li>Requires internet access even if image already pulled locally</li>
+</ul></li>
+</ul>
+</div>
+<div class="fragment">
+<ul>
+<li>“Load” software with function
+<ul>
+<li>Makes program logic easier to see</li>
+<li>May be some edge cases</li>
+<li>Other users may be unaware container is used</li>
+</ul></li>
+</ul>
 </div>
 </section></section>
 <section>
@@ -1593,17 +1651,65 @@ Trevor F. Freeman
 </div>
 <div class="fragment">
 <ol start="4" type="1">
-<li>Open browser window and connect to RStudio server URL: http://localhost:8787/</li>
+<li>Open browser window and connect to RStudio server URL: <a href="http://localhost:8787/" class="uri">http://localhost:8787/</a></li>
 </ol>
 <p>Authenticate using the username and password listed in your error file.</p>
+</div>
+</section></section>
+<section>
+<section id="conclusion" class="title-slide slide level1 center">
+<h1>Conclusion</h1>
+
+</section>
+<section id="workshop-goals-how-do-we-feel" class="slide level2">
+<h2>Workshop goals – How do we feel?</h2>
+<ul>
+<li>Learn to run software on ISAAC-NG using Apptainer containers</li>
+<li>Run CLI software from Apptainer containers</li>
+<li>Strategies to simplify container usage</li>
+<li>Run containers from Docker images on ISAAC-NG</li>
+<li>Provide resources for finding bioinformatics container images</li>
+<li>Run and connect to containerized RStudio server on ISAAC-NG</li>
+</ul>
+</section>
+<section id="when-would-you-use-containers" class="slide level2 smaller">
+<h2>When would you use containers?</h2>
+<div class="fragment">
+<p>Try out new version of software</p>
+</div>
+<div class="fragment">
+<p>Replace Conda</p>
+<ul>
+<li>No more environment headaches</li>
+<li>No need to setup channels properly</li>
+<li>No more accidentally installing software into wrong environment</li>
+<li>No more version clashes</li>
+</ul>
+</div>
+<div class="fragment">
+<p>Share scripts</p>
+<ul>
+<li>If it works for you, it should work for your collaborators</li>
+<li>If 1) the software is available in the container and 2) the file can be accessed in the container, the command should run.</li>
+</ul>
+</div>
+<div class="fragment">
+<p>Workflows/pipelines</p>
+<ul>
+<li>Containers + atomized workflow steps are the perfect match</li>
+</ul>
+</div>
+</section></section>
+<section id="final-questions-comments-or-suggestions" class="title-slide slide level1 center">
+<h1>Final questions, comments, or suggestions?</h1>
+<p>Reach out: <a href="mailto:tfreem10@utk.edu" class="email">tfreem10@utk.edu</a></p>
 
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
 </div>
 </div>
-</div>
-</section></section>
+</section>
     </div>
   </div>
 

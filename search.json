@@ -1,5 +1,19 @@
 [
   {
+    "objectID": "slides/20241216-slides.html#utk-bioinformatics-useful-links",
+    "href": "slides/20241216-slides.html#utk-bioinformatics-useful-links",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "UTK bioinformatics useful links",
+    "text": "UTK bioinformatics useful links\n\nUTK Bioinformatics Consulting Services – A collaborative group of genomics and bioinformatics analysts and scientific computing specialists aimed at providing a range of research support and training to faculty, staff, and students.\nUTK Bioinformatics Newsletter – A monthly newsletter about the latest bioinformatics and computational biology research at the University of Tennessee.\nBioinformatics office hours\nHigh Performance & Scientific Computing\nUT Genomics Core"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#workshop-goals",
+    "href": "slides/20241216-slides.html#workshop-goals",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Workshop goals",
+    "text": "Workshop goals\n\nLearn to run software on ISAAC-NG using Apptainer containers\nRun CLI software from Apptainer containers\nStrategies to simplify container usage\nRun containers from Docker images on ISAAC-NG\nProvide resources for finding bioinformatics container images\nRun and connect to containerized RStudio server on ISAAC-NG"
+  },
+  {
     "objectID": "slides/20241216-slides.html#login-to-isaac-ng",
     "href": "slides/20241216-slides.html#login-to-isaac-ng",
     "title": "Using Containerized Software on HPC for Bioinformatics",
@@ -81,7 +95,7 @@
     "href": "slides/20241216-slides.html#apptainer-shell-software-in-the-samtools-container",
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "apptainer shell – Software in the Samtools container",
-    "text": "apptainer shell – Software in the Samtools container\nEnter interactive shell session in container\n\n\nTerminal\n\napptainer shell samtools_1-21.sif\n\n\nSamtools is available inside the container\n\n\nApptainer shell\n\n# show samtools help\nsamtools version\n# show information about the samtools command\ntype samtools\n\n\n\nSoftware available on the ISAAC-NG host OS may not be available in the container\n\n\nApptainer shell\n\n# commands that aren't available in the container will fail\napptainer --version\nmodule avail"
+    "text": "apptainer shell – Software in the Samtools container\nEnter interactive shell session in container\n\n\nTerminal\n\napptainer shell samtools_1-21.sif\n\n\nSamtools is available inside the container\n\n\nApptainer shell\n\n# show samtools help\nsamtools version\n# show information about the samtools command\ntype samtools\n\n\n\nSoftware available on the ISAAC-NG host OS is not available in the container\n\n\nApptainer shell\n\n# commands that aren't available in the container will fail\napptainer --version\nmodule avail"
   },
   {
     "objectID": "slides/20241216-slides.html#apptainer-shell-files-in-the-samtools-container",
@@ -102,7 +116,7 @@
     "href": "slides/20241216-slides.html#apptainer-exec-execute-samtools-directly-in-container",
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "apptainer exec – Execute samtools directly in container",
-    "text": "apptainer exec – Execute samtools directly in container\n\n\nTerminal\n\n# print BAM file header with command directly executed in container\napptainer exec samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\napptainer exec\n\n\nRunning this command is completely independent from how the container is setup.\nIf 1) the software is available in the container and 2) the file can be accessed in the container, the command should run"
+    "text": "apptainer exec – Execute samtools directly in container\n\n\nTerminal\n\n# print BAM file header with command directly executed in container\napptainer exec samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\napptainer exec\n\n\nRunning this command is completely independent from how the container is setup.\nIf 1) the software is available in the container and 2) the file can be accessed in the container, the command should run."
   },
   {
     "objectID": "slides/20241216-slides.html#run-apptainer-conclusions-useful-commands",
@@ -123,7 +137,7 @@
     "href": "slides/20241216-slides.html#get-quick-alignments-info",
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "Get quick alignments info",
-    "text": "Get quick alignments info\nCount records in BAM with Samtools – samtools view -c &lt;input.bam&gt;\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nQuick alignment stats – samtools flagstat &lt;input.bam&gt;\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam"
+    "text": "Get quick alignments info\nCount records in BAM with Samtools – samtools view -c &lt;input.bam&gt;\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nQuick alignment stats – samtools flagstat &lt;input.bam&gt;\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools flagstat data/alignments/wt_antiflag_ip1_rep1.bam"
   },
   {
     "objectID": "slides/20241216-slides.html#get-info-about-high-quality-alignments",
@@ -137,7 +151,7 @@
     "href": "slides/20241216-slides.html#get-high-quality-alignments-quick-stats",
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "Get high quality alignments quick stats",
-    "text": "Get high quality alignments quick stats\nPipe out of one container and into another:\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | apptainer exec samtools_1-21.sif samtools flagstat -"
+    "text": "Get high quality alignments quick stats\nPipe out of one container and into another\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | apptainer exec samtools_1-21.sif samtools flagstat -"
   },
   {
     "objectID": "slides/20241216-slides.html#package-bam-analysis-into-a-script",
@@ -151,7 +165,7 @@
     "href": "slides/20241216-slides.html#script-is-full-of-duplicated-code",
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "Script is full of duplicated code",
-    "text": "Script is full of duplicated code\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# pull samtools image if it doesn't already exist\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nif [ ! -e samtools_1-21.sif ]; then\n  apptainer pull samtools_1-21.sif \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools view -h -q 10 \"${input_bam}\" | apptainer exec samtools_1-21.sif samtools flagstat -\n\nNumerous explicit uses of apptainer pull/exec samtools_1-21.sif\n\nDifficult to maintain – What if we want to update to Samtools v1.22?\nError prone"
+    "text": "Script is full of duplicated code\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# pull samtools image if it doesn't already exist\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nif [ ! -e samtools_1-21.sif ]; then\n  apptainer pull samtools_1-21.sif \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools view -h -q 10 \"${input_bam}\" | apptainer exec samtools_1-21.sif samtools flagstat -\n\nNumerous explicit uses of apptainer pull/exec samtools_1-21.sif\n\nDifficult to maintain and error prone – What if we want to update to Samtools v1.22?\nVerbose – Repetition obscures program logic"
   },
   {
     "objectID": "slides/20241216-slides.html#simplify-script-use-variable-for-image-path",
@@ -179,7 +193,7 @@
     "href": "slides/20241216-slides.html#simulate-loading-software-with-function",
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "Simulate “loading” software with function",
-    "text": "Simulate “loading” software with function\nAbstracts away the fact we’re using a container from the main program logic\n\n\nTerminal\n\n# make function to execute Samtools in Apptainer container\nfunction samtools {\n  local img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n  apptainer exec \"${img_uri}\" samtools \"${@}\"\n}\n\n# run samtools from the container using its function\nsamtools view -c data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\n‘Load’ container from function\n\n\nThe abstraction makes this method powerful and expressive, but it introduces some overhead. Since samtools is a function and not an executable file, there will be situations in which it doesn’t behave as running the typical command. There could also be some scenarios where passing arguments to the samtools command in the container through the samtools function doesn’t behave as expected.\nLong story short: beware of edge cases."
+    "text": "Simulate “loading” software with function\nAbstracts away the fact we’re using a container from the main program logic\n\n\nTerminal\n\n# make function to execute Samtools in Apptainer container\nfunction samtools {\n  local img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n  apptainer exec \"${img_uri}\" samtools \"${@}\"\n}\n\n# run samtools from the container using its function\nsamtools view -c data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\n‘Load’ container from function\n\n\nThe abstraction makes this method powerful and expressive, but it introduces some overhead. Since samtools is a function and not an executable file, there will be situations in which it doesn’t behave as running the typical command. There could also be some scenarios where passing arguments to the samtools command in the container through the samtools function doesn’t behave as expected.\nLong story short: beware of edge cases. This abstraction is best for experienced script writers or very straightforward use cases."
   },
   {
     "objectID": "slides/20241216-slides.html#simplify-script-use-function-to-simulate-loading-software",
@@ -187,6 +201,13 @@
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "Simplify script – Use function to simulate “loading” software",
     "text": "Simplify script – Use function to simulate “loading” software\nMost significant refactor: Replace individual apptainer exec commands with calls to samtools function\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# make function to execute Samtools in Apptainer container\nfunction samtools {\n  local img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n  apptainer exec \"${img_uri}\" samtools \"${@}\"\n}\n\n# print alignment stats\necho \"Number records in BAM:\"\nsamtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\nsamtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\nsamtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\nsamtools view -h -q 10 \"${input_bam}\" | samtools flagstat -"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#summarize-abstractions",
+    "href": "slides/20241216-slides.html#summarize-abstractions",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Summarize abstractions",
+    "text": "Summarize abstractions\n\nVariable image path\n\nSimple – makes container usage obvious\nDoesn’t require internet access if local image already exists\nRequires explicit image pull\nMaintain remote image URI and local image path\n\n\n\n\nExecute directly from URI\n\nMaintain only remote image URI\nNo explicit image pull step\nRequires internet access even if image already pulled locally\n\n\n\n\n\n“Load” software with function\n\nMakes program logic easier to see\nMay be some edge cases\nOther users may be unaware container is used"
   },
   {
     "objectID": "slides/20241216-slides.html#what-is-docker",
@@ -306,6 +327,20 @@
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "Run RStudio server Slurm job",
     "text": "Run RStudio server Slurm job\n\nSubmit job to Slurm scheduler\n\n\n\nTerminal\n\nsbatch rstudio_server.sh\n\n\n\nPrint captured usage info from job error file\n\n\n\nTerminal\n\ncat .cache/sbatch_logs/&lt;job ID&gt;_-_rstudio_server.err\n\n\n\n\nOpen a new terminal session on your local machine – NOT ISAAC-NG. Run the ssh command from the error file. Authenticate and leave the SSH session open.\n\n\n\nTerminal\n\nssh -N -L 8787:&lt;host&gt;:&lt;port&gt; &lt;user&gt;@login.isaac.utk.edu\n\n\n\n\nOpen browser window and connect to RStudio server URL: http://localhost:8787/\n\nAuthenticate using the username and password listed in your error file."
+  },
+  {
+    "objectID": "slides/20241216-slides.html#workshop-goals-how-do-we-feel",
+    "href": "slides/20241216-slides.html#workshop-goals-how-do-we-feel",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Workshop goals – How do we feel?",
+    "text": "Workshop goals – How do we feel?\n\nLearn to run software on ISAAC-NG using Apptainer containers\nRun CLI software from Apptainer containers\nStrategies to simplify container usage\nRun containers from Docker images on ISAAC-NG\nProvide resources for finding bioinformatics container images\nRun and connect to containerized RStudio server on ISAAC-NG"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#when-would-you-use-containers",
+    "href": "slides/20241216-slides.html#when-would-you-use-containers",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "When would you use containers?",
+    "text": "When would you use containers?\n\nTry out new version of software\n\n\nReplace Conda\n\nNo more environment headaches\nNo need to setup channels properly\nNo more accidentally installing software into wrong environment\nNo more version clashes\n\n\n\nShare scripts\n\nIf it works for you, it should work for your collaborators\nIf 1) the software is available in the container and 2) the file can be accessed in the container, the command should run.\n\n\n\nWorkflows/pipelines\n\nContainers + atomized workflow steps are the perfect match"
   },
   {
     "objectID": "index.html",
