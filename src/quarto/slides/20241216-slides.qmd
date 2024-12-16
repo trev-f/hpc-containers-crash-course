@@ -692,3 +692,283 @@ Need to balance several factors:
     * [Apptainer build](https://apptainer.org/docs/user/1.2/build_a_container.html) from [definition file](https://apptainer.org/docs/user/1.2/definition_files.html)
     * Gives you the power to do almost anything -- This is a pro and a con
     * Only as straightforward as installing the software you need to containerize
+    
+# Advanced container usage: Run RStudio server on ISAAC-NG
+
+## Containerized RStudio server on ISAAC-NG
+
+Why?
+
+* Avoid moving data on and off HPC
+* Access more resources than local computer
+* Run long jobs that would be difficult to run locally
+    
+. . .
+
+How?
+
+* Use RStudio server image
+* Write Slurm job submission script
+* Expose port we can safely and securely access
+
+## Rocker project Slurm script
+
+Useful links from the Rocker project
+
+* [Rocker RStudio server image](https://rocker-project.org/use/singularity.html#importing-a-rocker-image)
+
+* [Rocker singularity](https://rocker-project.org/use/singularity.html#slurm-job-script)
+
+In the next several slides, we'll build a Slurm job submission script based on the Rocker example script.
+
+## RStudio server Slurm script -- SBATCH headers {.smaller}
+
+SBATCH headers control job submission configurations
+
+```{.bash filename="rstudio_server.sh"}
+#!/bin/bash
+#SBATCH --job-name=rstudio_server
+#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err   # <1>
+#SBATCH --output=/dev/null                       # <2>
+#SBATCH --signal=USR2
+#SBATCH --account=ACF-UTK0011
+#SBATCH --partition=short
+#SBATCH --qos=short
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=2GB
+#SBATCH --time=00-00:15:00
+```
+1. We log useful information about how to access our RStudio server session into the stderr file.
+2. We don't need anything from stdout.
+
+## RStudio server Slurm script -- tmp directory {.smaller}
+
+Create a temporary directory specific to your user session so that your specific temporary files don't clash those of other users.
+
+```{.bash filename="rstudio_server.sh"}
+# Create temporary directory to be populated with directories to bind-mount in the container
+# where writable file systems are necessary. Adjust path as appropriate for your computing environment.
+workdir=$(mktemp -d)
+```
+
+## RStudio server Slurm script -- Configure R session {.smaller}
+
+Configure R session to use R packages/libraries that won't conflict with those from another R session and installation you have.
+
+```{.bash filename="rstudio_server.sh"}
+# Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with
+# personal libraries from any R installation in the host environment
+cat > ${workdir}/rsession.sh <<"END"
+#!/bin/sh
+export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2    # <1>
+mkdir -p "${R_LIBS_USER}"
+## custom Rprofile & Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)
+# export R_PROFILE_USER=/path/to/Rprofile    # <2>
+# export R_ENVIRON_USER=/path/to/Renviron    # <2>
+exec /usr/lib/rstudio-server/bin/rsession "${@}"
+END
+
+# make R session script executable and configure it to be bound into the container at runtime
+chmod +x ${workdir}/rsession.sh
+export SINGULARITY_BIND="${workdir}/rsession.sh:/etc/rstudio/rsession.sh"
+```
+1. This uses the `"${HOME}"` directory by default. If you plan to use this for real analyses it's not a bad idea to set this to use your `"${SCRATCHDIR}"`.
+2. If you're a highly knowledgeable R user, set these variables to have greater control over the profile and environment used in your RStudio session.
+
+## RStudio server Slurm script -- Do not suspend idle sessions {.smaller}
+
+```{.bash filename="rstudio_server.sh"}
+# Do not suspend idle sessions.
+# Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf
+# https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126
+export SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT=0
+```
+
+## RStudio server Slurm script -- Authorization {.smaller}
+
+Require a username and password for additional security
+
+```{.bash filename="rstudio_server.sh"}
+# set user ID and password for RStudio server
+export SINGULARITYENV_USER=$(whoami)    # <1>
+export SINGULARITYENV_PASSWORD=$(openssl rand -base64 15)    # <2>
+```
+1. Username is your ISAAC username.
+2. Password is randomly generated. You can change this to a password of your choosing if desired, but be careful about checking this into version control, especially if it's one of your usual passwords. I recommend just leaving this as a randomly generated password -- we'll see in a second that the password isn't that important.
+
+## RStudio server Slurm script -- Get open port {.smaller}
+
+We have to have an open port to expose our RStudio server.
+Since ISAAC is a shared resource, many of the ports will likely be taken, so we have to find and use an available one.
+
+```{.bash filename="rstudio_server.sh"}
+# get unused socket per https://unix.stackexchange.com/a/132524
+# tiny race condition between the python & singularity commands
+readonly PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()')
+```
+
+## RStudio server Slurm script -- Write session usage directions {.smaller}
+
+Write RStudio server session usage directions to stderr.
+We will access these in the `error` file specified in the SBATCH header.
+
+```{.bash filename="rstudio_server.sh"}
+# write session usage information to stderr
+cat 1>&2 <<END
+1. SSH tunnel from your workstation using the following command:
+
+   ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@login.isaac.utk.edu
+
+   and point your web browser to http://localhost:8787
+
+2. log in to RStudio Server using the following credentials:
+
+   user: ${SINGULARITYENV_USER}
+   password: ${SINGULARITYENV_PASSWORD}
+
+When done using RStudio Server, terminate the job by:
+
+1. Exit the RStudio Session ("power" button in the top right corner of the RStudio window)
+2. Issue the following command on the login node:
+
+      scancel -f ${SLURM_JOB_ID}
+END
+```
+
+## RStudio server Slurm script -- Launch RStudio server {.smaller}
+
+Here we actually run the RStudio server command that starts the RStudio server session we will connect to.
+
+```{.bash filename="rstudio_server.sh"}
+# run RStudio Server from apptainer image
+readonly rstudio_server_img_uri="docker://rocker/rstudio:4.4.2"
+apptainer exec \
+  --cleanenv \
+  --scratch /run,/tmp,/var/lib/rstudio-server \
+  --workdir ${workdir} \
+  "${rstudio_server_img_uri}" \
+  rserver --www-port ${PORT} \
+  --auth-none=0 \
+  --auth-pam-helper-path=pam-helper \
+  --server-user=$(whoami) \
+  --auth-stay-signed-in-days=30 \
+  --auth-timeout-minutes=0 \
+  --rsession-path=/etc/rstudio/rsession.sh
+printf 'rserver exited' 1>&2
+```
+
+## RStudio server Slurm script -- Full script {.smaller .scrollable}
+
+```{.bash filename="rstudio_server.sh"}
+#!/bin/bash
+#SBATCH --job-name=rstudio_server
+#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err
+#SBATCH --output=/dev/null
+#SBATCH --signal=USR2
+#SBATCH --account=ACF-UTK0011
+#SBATCH --partition=short
+#SBATCH --qos=short
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=2GB
+#SBATCH --time=00-00:15:00
+
+# Create temporary directory to be populated with directories to bind-mount in the container
+# where writable file systems are necessary. Adjust path as appropriate for your computing environment.
+workdir=$(mktemp -d)
+
+# Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with
+# personal libraries from any R installation in the host environment
+cat > ${workdir}/rsession.sh <<"END"
+#!/bin/sh
+export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2
+mkdir -p "${R_LIBS_USER}"
+## custom Rprofile & Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)
+# export R_PROFILE_USER=/path/to/Rprofile
+# export R_ENVIRON_USER=/path/to/Renviron
+exec /usr/lib/rstudio-server/bin/rsession "${@}"
+END
+
+# make R session script executable and configure it to be bound into the container at runtime
+chmod +x ${workdir}/rsession.sh
+export SINGULARITY_BIND="${workdir}/rsession.sh:/etc/rstudio/rsession.sh"
+
+# Do not suspend idle sessions.
+# Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf
+# https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126
+export SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT=0
+
+# set user ID and password for RStudio server
+export SINGULARITYENV_USER=$(whoami)
+export SINGULARITYENV_PASSWORD=$(openssl rand -base64 15)
+
+# get unused socket per https://unix.stackexchange.com/a/132524
+# tiny race condition between the python & singularity commands
+readonly PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()')
+
+# write session usage information to stderr
+cat 1>&2 <<END
+1. SSH tunnel from your workstation using the following command:
+
+   ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@login.isaac.utk.edu
+
+   and point your web browser to http://localhost:8787
+
+2. log in to RStudio Server using the following credentials:
+
+   user: ${SINGULARITYENV_USER}
+   password: ${SINGULARITYENV_PASSWORD}
+
+When done using RStudio Server, terminate the job by:
+
+1. Exit the RStudio Session ("power" button in the top right corner of the RStudio window)
+2. Issue the following command on the login node:
+
+      scancel -f ${SLURM_JOB_ID}
+END
+
+# run RStudio Server from apptainer image
+readonly rstudio_server_img_uri="docker://rocker/rstudio:4.4.2"
+apptainer exec \
+  --cleanenv \
+  --scratch /run,/tmp,/var/lib/rstudio-server \
+  --workdir ${workdir} \
+  "${rstudio_server_img_uri}" \
+  rserver --www-port ${PORT} \
+  --auth-none=0 \
+  --auth-pam-helper-path=pam-helper \
+  --server-user=$(whoami) \
+  --auth-stay-signed-in-days=30 \
+  --auth-timeout-minutes=0 \
+  --rsession-path=/etc/rstudio/rsession.sh
+printf 'rserver exited' 1>&2
+```
+
+## Run RStudio server Slurm job {.smaller}
+
+1. Submit job to Slurm scheduler
+
+```{.bash filename="Terminal"}
+sbatch rstudio_server.sh
+```
+
+. . .
+
+2. Print captured usage info from job error file
+
+```{.bash filename="Terminal"}
+cat .cache/sbatch_logs/<job ID>_-_rstudio_server.err
+```
+
+. . .
+
+3. Open a new terminal session on your **local** machine -- NOT ISAAC-NG. Run the `ssh` command from the error file. Authenticate and leave the SSH session open.
+
+```{.bash filename="Terminal"}
+ssh -N -L 8787:<host>:<port> <user>@login.isaac.utk.edu
+```
+
+. . .
+
+4. Open browser window and connect to RStudio server URL: http://localhost:8787/
+
+Authenticate using the username and password listed in your error file.
