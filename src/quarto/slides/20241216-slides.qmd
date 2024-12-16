@@ -265,7 +265,7 @@ type samtools
 
 . . .
 
-Software available on the ISAAC-NG host OS may not be available in the container
+Software available on the ISAAC-NG host OS is not available in the container
 
 ```{.bash filename="Apptainer shell"}
 # commands that aren't available in the container will fail
