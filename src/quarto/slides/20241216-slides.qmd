@@ -639,4 +639,56 @@ Prepend images on Dockerhub or quay.io with `docker://` instead of our usual `ht
 ```{.bash filename="Terminal"}
 # run samtools container from docker image
 apptainer exec docker://quay.io/biocontainers/samtools:1.21--h50ea8bc_0 samtools head data/alignments/wt_antiflag_ip1_rep1.bam
-```
+```   
+
+# Where to find remote images
+
+## Remote image considerations
+
+Need to balance several factors:
+
+* Reliability & stability -- Will the image be there the next time you try to pull it?
+* Updates -- Will new images be made available with updated versions of software?
+* Accessibility -- Is it easy to find and use the images when you need them? Are they reasonably sized?
+* Security -- Does the container do what you need it to do without any weird side effects?
+    
+
+## Remote image sources {.smaller}
+
+1. Official image from software authors/maintainers
+
+    * Up to date and stable -- Only as good as the maintainers
+    * Example: [Google DeepVariant](https://github.com/google/deepvariant/blob/r1.4/docs/deepvariant-quick-start.md#get-docker-image-models-and-test-datas)
+
+. . .
+
+2. Large, community driven resources -- Especially for general software
+
+    * Highly stable
+    * Frequently updated
+    * Example: [Rocker project](https://rocker-project.org/) for R environment
+    
+. . .
+
+3. [BioContainers](https://biocontainers.pro/) container registry
+
+    * Excellent resource for popular (and many unpopular) bioinformatics programs
+    * Many versions available and frequently updated
+    * Highly stable
+    
+## Other image sources {.smaller}
+
+* Public repositories, e.g. other people's images on [Docker Hub](https://hub.docker.com/)
+
+    * Limited reliability
+    * Minor security concerns
+    * No guaranteed updates
+    * Usually last resort
+
+. . .
+
+* Build custom image
+
+    * [Apptainer build](https://apptainer.org/docs/user/1.2/build_a_container.html) from [definition file](https://apptainer.org/docs/user/1.2/definition_files.html)
+    * Gives you the power to do almost anything -- This is a pro and a con
+    * Only as straightforward as installing the software you need to containerize
