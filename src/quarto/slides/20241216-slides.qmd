@@ -779,7 +779,7 @@ SBATCH headers control job submission configurations
 #SBATCH --partition=short
 #SBATCH --qos=short
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=2GB
+#SBATCH --mem=4GB
 #SBATCH --time=00-00:15:00
 ```
 1. We log useful information about how to access our RStudio server session into the stderr file.
@@ -913,7 +913,7 @@ printf 'rserver exited' 1>&2
 #SBATCH --partition=short
 #SBATCH --qos=short
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=2GB
+#SBATCH --mem=4GB
 #SBATCH --time=00-00:15:00
 
 # Create temporary directory to be populated with directories to bind-mount in the container
