@@ -24,5 +24,4 @@ This repository consists of workshop information and the source files used to bu
 
 [Zoom link -- Synchronous session](https://tennessee.zoom.us/j/86779798088)
 
-[COMING SOON]
-[Zoom link -- Hosted recording]()
+[Zoom link -- Hosted recording](https://liveutk-my.sharepoint.com/:v:/g/personal/tfreem10_vols_utk_edu/EYx8DMwB5bxOrd_bPSDqJaIBHZIP2tIUMKAXNG6wyYCowg?e=kbhObw)
