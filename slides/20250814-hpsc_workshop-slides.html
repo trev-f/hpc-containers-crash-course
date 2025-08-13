@@ -12,8 +12,8 @@
   <meta name="generator" content="quarto-1.6.43">
 
   <meta name="author" content="Trevor F. Freeman">
-  <meta name="dcterms.date" content="2024-12-16">
-  <title>HPC Containers Crash Course – Using Containerized Software on HPC for Bioinformatics</title>
+  <meta name="dcterms.date" content="2025-08-14">
+  <title>HPC Containers Crash Course – HPSC: Using Containers</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -198,7 +198,7 @@
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">Using Containerized Software on HPC for Bioinformatics</h1>
+  <h1 class="title">HPSC: Using Containers</h1>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -211,7 +211,7 @@ Trevor F. Freeman
     </div>
 </div>
 
-  <p class="date">2024-12-16</p>
+  <p class="date">2025-08-14</p>
 </section>
 <section>
 <section id="before-we-get-started" class="title-slide slide level1 center">
@@ -254,6 +254,10 @@ Trevor F. Freeman
 </div>
 <div class="sourceCode" id="cb1" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a></a><span class="fu">ssh</span> <span class="op">&lt;</span>netid<span class="op">&gt;</span>@login.isaac.utk.edu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Other options</p>
+<ul>
+<li>Open OnDemand: <a href="https://login.isaac.utk.edu" class="uri">https://login.isaac.utk.edu</a> -&gt; Files -&gt; Open in Terminal</li>
+</ul>
 </section>
 <section id="setup-workshop-project-directory" class="slide level2">
 <h2>Setup workshop project directory</h2>
@@ -266,7 +270,7 @@ Trevor F. Freeman
 <pre><strong>Terminal</strong></pre>
 </div>
 <div class="sourceCode" id="cb2" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a></a><span class="co"># set variable for project directory</span></span>
-<span id="cb2-2"><a></a><span class="va">proj_dir</span><span class="op">=</span><span class="st">"</span><span class="va">${SCRATCHDIR}</span><span class="st">/hpc-containers-crash-course"</span></span>
+<span id="cb2-2"><a></a><span class="va">proj_dir</span><span class="op">=</span><span class="st">"</span><span class="va">${SCRATCHDIR}</span><span class="st">/hpsc-using-containers"</span></span>
 <span id="cb2-3"><a></a></span>
 <span id="cb2-4"><a></a><span class="co"># create the project directory and navigate into it</span></span>
 <span id="cb2-5"><a></a><span class="fu">mkdir</span> <span class="at">-p</span> <span class="st">"</span><span class="va">${proj_dir}</span><span class="st">"</span></span>
@@ -300,7 +304,7 @@ Trevor F. Freeman
 <span id="cb3-3"><a></a>  <span class="at">--partition</span> short <span class="dt">\</span></span>
 <span id="cb3-4"><a></a>  <span class="at">--qos</span> short <span class="dt">\</span></span>
 <span id="cb3-5"><a></a>  <span class="at">--cpus-per-task</span> 1 <span class="dt">\</span></span>
-<span id="cb3-6"><a></a>  <span class="at">--time</span> 02:00:00 <span class="dt">\</span></span>
+<span id="cb3-6"><a></a>  <span class="at">--time</span> 03:00:00 <span class="dt">\</span></span>
 <span id="cb3-7"><a></a>  <span class="at">--pty</span> <span class="dt">\</span></span>
 <span id="cb3-8"><a></a>  /bin/bash <span class="at">-i</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -335,28 +339,24 @@ Trevor F. Freeman
 </ul>
 </div>
 </section>
-<section id="fetch-toy-data" class="slide level2">
-<h2>Fetch toy data</h2>
+
+<section id="copy-toy-data" class="slide level2">
+<h2>Copy toy data</h2>
 <ol type="1">
-<li>Make data directory</li>
-<li>Download toy data files into directory</li>
+<li>Make you data directory</li>
+<li>Copy toy data files into your directory</li>
 </ol>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb4" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a></a><span class="co"># set variable for directory to store alignments in</span></span>
-<span id="cb4-2"><a></a><span class="va">alignments_dir</span><span class="op">=</span><span class="st">"data/alignments"</span></span>
-<span id="cb4-3"><a></a><span class="co"># create alignments directory</span></span>
-<span id="cb4-4"><a></a><span class="fu">mkdir</span> <span class="at">-p</span> <span class="st">"</span><span class="va">${alignments_dir}</span><span class="st">"</span></span>
-<span id="cb4-5"><a></a></span>
-<span id="cb4-6"><a></a><span class="co"># download BAM and index</span></span>
-<span id="cb4-7"><a></a><span class="fu">wget</span> <span class="dt">\</span></span>
-<span id="cb4-8"><a></a>  <span class="at">-P</span> <span class="st">"</span><span class="va">${alignments_dir}</span><span class="st">"</span> <span class="dt">\</span></span>
-<span id="cb4-9"><a></a>  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam</span>
-<span id="cb4-10"><a></a><span class="fu">wget</span> <span class="dt">\</span></span>
-<span id="cb4-11"><a></a>  <span class="at">-P</span> <span class="st">"</span><span class="va">${alignments_dir}</span><span class="st">"</span> <span class="dt">\</span></span>
-<span id="cb4-12"><a></a>  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam.bai</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a></a><span class="co"># set variable for directory to store alignments in</span></span>
+<span id="cb5-2"><a></a><span class="va">alignments_dir</span><span class="op">=</span><span class="st">"data/alignments"</span></span>
+<span id="cb5-3"><a></a><span class="co"># create alignments directory</span></span>
+<span id="cb5-4"><a></a><span class="fu">mkdir</span> <span class="at">-p</span> <span class="st">"</span><span class="va">${alignments_dir}</span><span class="st">"</span></span>
+<span id="cb5-5"><a></a></span>
+<span id="cb5-6"><a></a><span class="co"># copy BAM and index</span></span>
+<span id="cb5-7"><a></a><span class="fu">cp</span> /lustre/isaac24/proj/UTK0411/tfreem10/hpc-containers-crash-course/data/alignments/<span class="pp">*</span> <span class="st">"</span><span class="va">${alignments_dir}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section></section>
 <section>
@@ -364,28 +364,28 @@ Trevor F. Freeman
 <h1>Run software in Apptainer containers</h1>
 
 </section>
-<section id="get-started-with-apptainer" class="slide level2">
-<h2>Get started with Apptainer</h2>
+<section id="get-started-with-apptainer-cli" class="slide level2">
+<h2>Get started with Apptainer CLI</h2>
 <p>Run Apptainer</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb5" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a></a><span class="ex">apptainer</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a></a><span class="ex">apptainer</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Get help with Apptainer and subcommands</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb6" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a></a><span class="co"># get help with Apptainer</span></span>
-<span id="cb6-2"><a></a><span class="ex">apptainer</span> help</span>
-<span id="cb6-3"><a></a></span>
-<span id="cb6-4"><a></a><span class="co"># get help with Apptainer subcommands</span></span>
-<span id="cb6-5"><a></a><span class="ex">apptainer</span> help pull</span>
-<span id="cb6-6"><a></a><span class="co"># same as -h/--help flag</span></span>
-<span id="cb6-7"><a></a><span class="ex">apptainer</span> pull <span class="at">-h</span></span>
-<span id="cb6-8"><a></a><span class="ex">apptainer</span> pull <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a></a><span class="co"># get help with Apptainer</span></span>
+<span id="cb7-2"><a></a><span class="ex">apptainer</span> help</span>
+<span id="cb7-3"><a></a></span>
+<span id="cb7-4"><a></a><span class="co"># get help with Apptainer subcommands</span></span>
+<span id="cb7-5"><a></a><span class="ex">apptainer</span> help pull</span>
+<span id="cb7-6"><a></a><span class="co"># same as -h/--help flag</span></span>
+<span id="cb7-7"><a></a><span class="ex">apptainer</span> pull <span class="at">-h</span></span>
+<span id="cb7-8"><a></a><span class="ex">apptainer</span> pull <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="terminology-note-apptainer-is-singularity" class="slide level2">
@@ -395,40 +395,48 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb7" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a></a><span class="ex">apptainer</span> <span class="at">--version</span></span>
-<span id="cb7-2"><a></a><span class="ex">singularity</span> <span class="at">--version</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a></a><span class="ex">apptainer</span> <span class="at">--version</span></span>
+<span id="cb8-2"><a></a><span class="ex">singularity</span> <span class="at">--version</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Running <code>singularity</code> launches Apptainer</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb8" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a></a><span class="co"># find executables for Apptainer and Singularity</span></span>
-<span id="cb8-2"><a></a><span class="fu">which</span> apptainer</span>
-<span id="cb8-3"><a></a><span class="fu">which</span> singularity</span>
-<span id="cb8-4"><a></a></span>
-<span id="cb8-5"><a></a><span class="co"># show more info about those executables</span></span>
-<span id="cb8-6"><a></a><span class="fu">ls</span> <span class="at">-lh</span> /usr/bin/apptainer /usr/bin/singularity</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb9" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a></a><span class="co"># find executables for Apptainer and Singularity</span></span>
+<span id="cb9-2"><a></a><span class="fu">which</span> apptainer</span>
+<span id="cb9-3"><a></a><span class="fu">which</span> singularity</span>
+<span id="cb9-4"><a></a></span>
+<span id="cb9-5"><a></a><span class="co"># show more info about those executables</span></span>
+<span id="cb9-6"><a></a><span class="fu">ls</span> <span class="at">-lh</span> /usr/bin/apptainer /usr/bin/singularity</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><a href="https://apptainer.org/docs/user/1.2/singularity_compatibility.html">Singularity Compatibility</a> in Apptainer docs</p>
 </section>
+<section id="terminology-note-images-and-containers" class="slide level2 smaller">
+<h2>Terminology Note: Images and Containers</h2>
+<p>Images are executable files containing all the components needed to run some software.</p>
+<p>Containers are runtime instances of images.</p>
+<div class="fragment">
+<div class="columns">
+<div class="column" style="width:50%;">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="images/blueprint.jpeg"></p>
+<figcaption>Image</figcaption>
+</figure>
+</div>
+</div><div class="column" style="width:50%;">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="images/house.jpg"></p>
+<figcaption>Container</figcaption>
+</figure>
+</div>
+</div></div>
+</div>
+</section>
 <section id="configure-apptainer-cache" class="slide level2">
 <h2>Configure Apptainer cache</h2>
-<p>Set Apptainer to cache images in scratch directory</p>
-<div class="code-with-filename">
-<div class="code-with-filename-file">
-<pre><strong>~/.bashrc</strong></pre>
-</div>
-<div class="sourceCode" id="cb9" data-filename="~/.bashrc"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a></a><span class="bu">export</span> <span class="va">APPTAINER_CACHE</span><span class="op">=</span><span class="st">"</span><span class="va">${SCRATCHDIR}</span><span class="st">/.apptainer/cache"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Restart your shell session to load this environment variable</p>
-<div class="code-with-filename">
-<div class="code-with-filename-file">
-<pre><strong>Terminal</strong></pre>
-</div>
-<div class="sourceCode" id="cb10" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a></a><span class="bu">exec</span> bash</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="fragment">
 <div title="Apptainer cache">
 <div class="callout callout-important callout-titled callout-style-default">
 <div class="callout-body">
@@ -444,6 +452,21 @@ Trevor F. Freeman
 </div>
 </div>
 </div>
+<div class="fragment">
+<p>Set Apptainer to cache images in scratch directory</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>~/.bashrc</strong></pre>
+</div>
+<div class="sourceCode" id="cb10" data-filename="~/.bashrc"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a></a><span class="bu">export</span> <span class="va">APPTAINER_CACHE</span><span class="op">=</span><span class="st">"</span><span class="va">${SCRATCHDIR}</span><span class="st">/.apptainer/cache"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Restart your shell session to load this environment variable</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb11" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a></a><span class="bu">exec</span> bash</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </div>
 </section>
 <section id="apptainer-pull-get-apptainer-image-from-remote-uri" class="slide level2">
@@ -453,7 +476,7 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb11" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a></a><span class="ex">apptainer</span> help pull</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb12" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a></a><span class="ex">apptainer</span> help pull</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Basic usage – <code>apptainer pull [output file] &lt;URI&gt;</code></p>
 <div class="fragment">
@@ -462,16 +485,22 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
-<div class="sourceCode" id="cb12" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a></a><span class="co"># set variable for Samtools image URI</span></span>
-<span id="cb12-2"><a></a><span class="va">samtools_img_uri</span><span class="op">=</span><span class="st">"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"</span></span>
-<span id="cb12-3"><a></a></span>
-<span id="cb12-4"><a></a><span class="co"># pull the apptainer image</span></span>
-<span id="cb12-5"><a></a><span class="ex">apptainer</span> pull samtools_1-21.sif <span class="st">"</span><span class="va">${samtools_img_uri}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="annotated-cell-13" data-filename="Terminal"><pre class="sourceCode numberSource bash code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode bash"><span id="annotated-cell-13-1"><a href="#annotated-cell-13-1"></a><span class="co"># set variable for Samtools image URI</span></span>
+<span id="annotated-cell-13-2"><a href="#annotated-cell-13-2"></a><span class="va">samtools_img_uri</span><span class="op">=</span><span class="st">"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"</span></span>
+<span id="annotated-cell-13-3"><a href="#annotated-cell-13-3"></a></span>
+<span id="annotated-cell-13-4"><a href="#annotated-cell-13-4"></a><span class="co"># pull the apptainer image</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-13" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-13-5" class="code-annotation-target"><a href="#annotated-cell-13-5"></a><span class="ex">apptainer</span> pull samtools_1-21.sif <span class="st">"</span><span class="va">${samtools_img_uri}</span><span class="st">"</span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-13" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-13" data-code-lines="5" data-code-annotation="1">It’s typical to write images to file with <code>.sif</code> extension.</span>
+</dd>
+</dl>
 </div>
 </section>
-<section id="three-ways-to-interact-with-an-image" class="slide level2 smaller">
-<h2>Three ways to interact with an image</h2>
+<section id="ways-to-run-container-from-image" class="slide level2 smaller">
+<h2>3 ways to run container from image</h2>
 <ol type="1">
 <li><code>apptainer shell &lt;image&gt;</code> – Spawn interactive shell in container</li>
 </ol>
@@ -558,10 +587,25 @@ Trevor F. Freeman
 <span id="cb17-2"><a></a><span class="ex">apptainer</span> <span class="at">--version</span></span>
 <span id="cb17-3"><a></a><span class="ex">module</span> avail</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<div title="Isolation">
+<div class="callout callout-note callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Isolation</strong></p>
+</div>
+<div class="callout-content">
+<p>This is what we mean we say containers provide isolated environments.</p>
+</div>
+</div>
+</div>
+</div>
 </div>
 </section>
-<section id="apptainer-shell-files-in-the-samtools-container" class="slide level2">
-<h2><code>apptainer shell</code> – Files in the Samtools container</h2>
+<section id="apptainer-shell-files-available-in-the-samtools-container" class="slide level2 smaller">
+<h2><code>apptainer shell</code> – Files available in the Samtools container</h2>
 <p>Directly access files in project directory</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
@@ -571,7 +615,7 @@ Trevor F. Freeman
 <span id="cb18-2"><a></a><span class="ex">samtools</span> head data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="fragment">
-<p>Thanks to the ISAAC-NG sys admins, all of your favorite ISAAC-NG directories are accessible inside of containers right where we expect them to be!</p>
+<p>All of your favorite ISAAC-NG directories are accessible inside of containers right where we expect them to be!</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Apptainer shell</strong></pre>
@@ -581,7 +625,24 @@ Trevor F. Freeman
 <span id="cb19-3"><a></a><span class="fu">ls</span> <span class="st">"</span><span class="va">${SCRATCHDIR}</span><span class="st">"</span></span>
 <span id="cb19-4"><a></a></span>
 <span id="cb19-5"><a></a><span class="co"># look into the list of project directories</span></span>
-<span id="cb19-6"><a></a><span class="fu">ls</span> /lustre/isaac/proj</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-6"><a></a><span class="fu">ls</span> /lustre/isaac24/proj</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div class="fragment">
+<div title="Bind mounts">
+<div class="callout callout-important callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Bind mounts</strong></p>
+</div>
+<div class="callout-content">
+<p>These directories are mounted when we run the container – they are not part of the image. Bind mounts are set in the configuration or during the container run command. The ISAAC-NG sys admins have configured these directories to be mounted by default. Other systems will have different configurations, and may not be as user friendly by default. Thanks, sys admins!</p>
+</div>
+</div>
+</div>
 </div>
 </div>
 </section>
@@ -614,17 +675,17 @@ Trevor F. Freeman
 </div>
 </div>
 <div class="fragment">
-<div title="apptainer run">
-<div class="callout callout-note callout-titled callout-style-default">
+<div title="`apptainer run`">
+<div class="callout callout-important callout-titled callout-style-default">
 <div class="callout-body">
 <div class="callout-title">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<p><strong>apptainer run</strong></p>
+<p><strong><code>apptainer run</code></strong></p>
 </div>
 <div class="callout-content">
-<p>Running this command is completely dependent on how the runscript is setup</p>
+<p>Running this command is completely dependent on the runscript. Since we have no control over the runscript of a container we did not create, I tend to not recommend relying on <code>apptainer run</code>.</p>
 </div>
 </div>
 </div>
@@ -745,7 +806,7 @@ Trevor F. Freeman
 <p><strong>Pipes in Apptainer</strong></p>
 </div>
 <div class="callout-content">
-<p>Apptainer containers work with pipes and redirects. <code>stdout</code>/<code>stdin</code>/<code>stderr</code> goes back and forth between the container and our OS. In the command above, the filtered BAM stream from the container is piped into the <code>samtools</code> command executed on <em>our OS</em>. We don’t have the <code>samtools</code> command available on our OS, so this fails.</p>
+<p>Apptainer containers work with pipes and redirects. <code>stdout</code>/<code>stdin</code>/<code>stderr</code> goes back and forth between the container and the host OS. In the command above, the filtered BAM stream from the container is piped into the <code>samtools</code> command executed on <em>the host OS</em>. We don’t have the <code>samtools</code> command available on the host OS, thus the <code>command not found</code> error.</p>
 </div>
 </div>
 </div>
@@ -879,7 +940,7 @@ Trevor F. Freeman
 </div>
 <div class="sourceCode" id="cb33" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb33-1"><a></a><span class="ex">apptainer</span> help exec</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Many URI types are listed as valid <code>&lt;container&gt;</code> options. <code>https://*</code> is not among them, but it works.</p>
+<p>Many URI protocols are listed as valid <code>&lt;container&gt;</code> options. <code>https://*</code> is not among them, but it works.</p>
 <div class="fragment">
 <p><code>apptainer exec</code> with remote image URI pulls and caches remote image and executes command inside container</p>
 <div class="code-with-filename">
@@ -952,8 +1013,8 @@ Trevor F. Freeman
 <p><strong>‘Load’ container from function</strong></p>
 </div>
 <div class="callout-content">
-<p>The abstraction makes this method powerful and expressive, but it introduces some overhead. Since <code>samtools</code> is a function and not an executable file, there will be situations in which it doesn’t behave as running the typical command. There could also be some scenarios where passing arguments to the <code>samtools</code> command in the container through the <code>samtools</code> function doesn’t behave as expected.</p>
-<p>Long story short: beware of edge cases. This abstraction is best for experienced script writers or very straightforward use cases.</p>
+<p>The abstraction makes this method powerful and expressive, but it introduces some overhead. Since <code>samtools</code> is a function and not an executable file here, there will be situations in which it doesn’t behave exactly like running the <code>samtools</code> command. There may also be scenarios where passing arguments to the <code>samtools</code> command in the container through the <code>samtools</code> function doesn’t behave as expected.</p>
+<p>Long story short: beware of edge cases. This abstraction is best for experienced shell script writers and very straightforward use cases. Don’t trade working code for pretty code!</p>
 </div>
 </div>
 </div>
@@ -993,7 +1054,7 @@ Trevor F. Freeman
 <section id="summarize-abstractions" class="slide level2 smaller">
 <h2>Summarize abstractions</h2>
 <ul>
-<li>Variable image path
+<li>Image path as variable
 <ul>
 <li>Simple – makes container usage obvious</li>
 <li>Doesn’t require internet access if local image already exists</li>
@@ -1003,7 +1064,7 @@ Trevor F. Freeman
 </ul>
 <div class="fragment">
 <ul>
-<li>Execute directly from URI
+<li>Execute directly from remote URI
 <ul>
 <li>Maintain only remote image URI</li>
 <li>No explicit image pull step</li>
@@ -1016,7 +1077,7 @@ Trevor F. Freeman
 <li>“Load” software with function
 <ul>
 <li>Makes program logic easier to see</li>
-<li>May be some edge cases</li>
+<li>May be edge cases with unexpected behavior</li>
 <li>Other users may be unaware container is used</li>
 </ul></li>
 </ul>
@@ -1045,7 +1106,7 @@ Trevor F. Freeman
 
 <section id="apptainer-works-with-docker-images-1" class="slide level2">
 <h2>Apptainer works with Docker images</h2>
-<p>Simply use the correct URI</p>
+<p>Simply use the correct remote URI protocol</p>
 <p>Prepend images on Dockerhub or quay.io with <code>docker://</code> instead of our usual <code>https://</code></p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
@@ -1053,6 +1114,23 @@ Trevor F. Freeman
 </div>
 <div class="sourceCode" id="cb38" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb38-1"><a></a><span class="co"># run samtools container from docker image</span></span>
 <span id="cb38-2"><a></a><span class="ex">apptainer</span> exec docker://quay.io/biocontainers/samtools:1.21--h50ea8bc_0 samtools head data/alignments/wt_antiflag_ip1_rep1.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="fragment">
+<div title="Cache Docker images">
+<div class="callout callout-note callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Cache Docker images</strong></p>
+</div>
+<div class="callout-content">
+<p>Docker images are also cached by Apptainer. Rerun the command from above and it should run much faster.</p>
+</div>
+</div>
+</div>
+</div>
 </div>
 </section></section>
 <section>
@@ -1160,26 +1238,26 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>rstudio_server.sh</strong></pre>
 </div>
-<div class="sourceCode" id="annotated-cell-39" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode bash"><span id="annotated-cell-39-1"><a href="#annotated-cell-39-1"></a><span class="co">#!/bin/bash</span></span>
-<span id="annotated-cell-39-2"><a href="#annotated-cell-39-2"></a><span class="co">#SBATCH --job-name=rstudio_server</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-39-3" class="code-annotation-target"><a href="#annotated-cell-39-3"></a><span class="co">#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-39-4" class="code-annotation-target"><a href="#annotated-cell-39-4"></a><span class="co">#SBATCH --output=/dev/null</span></span>
-<span id="annotated-cell-39-5"><a href="#annotated-cell-39-5"></a><span class="co">#SBATCH --signal=USR2</span></span>
-<span id="annotated-cell-39-6"><a href="#annotated-cell-39-6"></a><span class="co">#SBATCH --account=ACF-UTK0011</span></span>
-<span id="annotated-cell-39-7"><a href="#annotated-cell-39-7"></a><span class="co">#SBATCH --partition=short</span></span>
-<span id="annotated-cell-39-8"><a href="#annotated-cell-39-8"></a><span class="co">#SBATCH --qos=short</span></span>
-<span id="annotated-cell-39-9"><a href="#annotated-cell-39-9"></a><span class="co">#SBATCH --cpus-per-task=1</span></span>
-<span id="annotated-cell-39-10"><a href="#annotated-cell-39-10"></a><span class="co">#SBATCH --mem=4GB</span></span>
-<span id="annotated-cell-39-11"><a href="#annotated-cell-39-11"></a><span class="co">#SBATCH --time=00-00:15:00</span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="annotated-cell-40" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode bash"><span id="annotated-cell-40-1"><a href="#annotated-cell-40-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="annotated-cell-40-2"><a href="#annotated-cell-40-2"></a><span class="co">#SBATCH --job-name=rstudio_server</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-40" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-40-3" class="code-annotation-target"><a href="#annotated-cell-40-3"></a><span class="co">#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-40" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-40-4" class="code-annotation-target"><a href="#annotated-cell-40-4"></a><span class="co">#SBATCH --output=/dev/null</span></span>
+<span id="annotated-cell-40-5"><a href="#annotated-cell-40-5"></a><span class="co">#SBATCH --signal=USR2</span></span>
+<span id="annotated-cell-40-6"><a href="#annotated-cell-40-6"></a><span class="co">#SBATCH --account=ACF-UTK0011</span></span>
+<span id="annotated-cell-40-7"><a href="#annotated-cell-40-7"></a><span class="co">#SBATCH --partition=short</span></span>
+<span id="annotated-cell-40-8"><a href="#annotated-cell-40-8"></a><span class="co">#SBATCH --qos=short</span></span>
+<span id="annotated-cell-40-9"><a href="#annotated-cell-40-9"></a><span class="co">#SBATCH --cpus-per-task=1</span></span>
+<span id="annotated-cell-40-10"><a href="#annotated-cell-40-10"></a><span class="co">#SBATCH --mem=4GB</span></span>
+<span id="annotated-cell-40-11"><a href="#annotated-cell-40-11"></a><span class="co">#SBATCH --time=00-00:15:00</span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-39" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-40" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-39" data-code-lines="3" data-code-annotation="1">We log useful information about how to access our RStudio server session into the stderr file.</span>
+<span data-code-cell="annotated-cell-40" data-code-lines="3" data-code-annotation="1">We log useful information about how to access our RStudio server session into the stderr file.</span>
 </dd>
-<dt data-target-cell="annotated-cell-39" data-target-annotation="2">2</dt>
+<dt data-target-cell="annotated-cell-40" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-39" data-code-lines="4" data-code-annotation="2">We don’t need anything from stdout.</span>
+<span data-code-cell="annotated-cell-40" data-code-lines="4" data-code-annotation="2">We don’t need anything from stdout.</span>
 </dd>
 </dl>
 </section>
@@ -1202,30 +1280,30 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>rstudio_server.sh</strong></pre>
 </div>
-<div class="sourceCode" id="annotated-cell-41" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode bash"><span id="annotated-cell-41-1"><a href="#annotated-cell-41-1"></a><span class="co"># Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with</span></span>
-<span id="annotated-cell-41-2"><a href="#annotated-cell-41-2"></a><span class="co"># personal libraries from any R installation in the host environment</span></span>
-<span id="annotated-cell-41-3"><a href="#annotated-cell-41-3"></a><span class="fu">cat</span> <span class="op">&gt;</span> <span class="va">${workdir}</span>/rsession.sh <span class="op">&lt;&lt;"END"</span></span>
-<span id="annotated-cell-41-4"><a href="#annotated-cell-41-4"></a><span class="st">#!/bin/sh</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-41" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-41-5" class="code-annotation-target"><a href="#annotated-cell-41-5"></a><span class="st">export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2</span></span>
-<span id="annotated-cell-41-6"><a href="#annotated-cell-41-6"></a><span class="st">mkdir -p "${R_LIBS_USER}"</span></span>
-<span id="annotated-cell-41-7"><a href="#annotated-cell-41-7"></a><span class="st">## custom Rprofile &amp; Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-41" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-41-8" class="code-annotation-target"><a href="#annotated-cell-41-8"></a><span class="st"># export R_PROFILE_USER=/path/to/Rprofile</span></span>
-<span id="annotated-cell-41-9"><a href="#annotated-cell-41-9"></a><span class="st"># export R_ENVIRON_USER=/path/to/Renviron</span></span>
-<span id="annotated-cell-41-10"><a href="#annotated-cell-41-10"></a><span class="st">exec /usr/lib/rstudio-server/bin/rsession "${@}"</span></span>
-<span id="annotated-cell-41-11"><a href="#annotated-cell-41-11"></a><span class="op">END</span></span>
-<span id="annotated-cell-41-12"><a href="#annotated-cell-41-12"></a></span>
-<span id="annotated-cell-41-13"><a href="#annotated-cell-41-13"></a><span class="co"># make R session script executable and configure it to be bound into the container at runtime</span></span>
-<span id="annotated-cell-41-14"><a href="#annotated-cell-41-14"></a><span class="fu">chmod</span> +x <span class="va">${workdir}</span>/rsession.sh</span>
-<span id="annotated-cell-41-15"><a href="#annotated-cell-41-15"></a><span class="bu">export</span> <span class="va">SINGULARITY_BIND</span><span class="op">=</span><span class="st">"</span><span class="va">${workdir}</span><span class="st">/rsession.sh:/etc/rstudio/rsession.sh"</span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="annotated-cell-42" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode bash"><span id="annotated-cell-42-1"><a href="#annotated-cell-42-1"></a><span class="co"># Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with</span></span>
+<span id="annotated-cell-42-2"><a href="#annotated-cell-42-2"></a><span class="co"># personal libraries from any R installation in the host environment</span></span>
+<span id="annotated-cell-42-3"><a href="#annotated-cell-42-3"></a><span class="fu">cat</span> <span class="op">&gt;</span> <span class="va">${workdir}</span>/rsession.sh <span class="op">&lt;&lt;"END"</span></span>
+<span id="annotated-cell-42-4"><a href="#annotated-cell-42-4"></a><span class="st">#!/bin/sh</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-42" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-42-5" class="code-annotation-target"><a href="#annotated-cell-42-5"></a><span class="st">export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2</span></span>
+<span id="annotated-cell-42-6"><a href="#annotated-cell-42-6"></a><span class="st">mkdir -p "${R_LIBS_USER}"</span></span>
+<span id="annotated-cell-42-7"><a href="#annotated-cell-42-7"></a><span class="st">## custom Rprofile &amp; Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-42" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-42-8" class="code-annotation-target"><a href="#annotated-cell-42-8"></a><span class="st"># export R_PROFILE_USER=/path/to/Rprofile</span></span>
+<span id="annotated-cell-42-9"><a href="#annotated-cell-42-9"></a><span class="st"># export R_ENVIRON_USER=/path/to/Renviron</span></span>
+<span id="annotated-cell-42-10"><a href="#annotated-cell-42-10"></a><span class="st">exec /usr/lib/rstudio-server/bin/rsession "${@}"</span></span>
+<span id="annotated-cell-42-11"><a href="#annotated-cell-42-11"></a><span class="op">END</span></span>
+<span id="annotated-cell-42-12"><a href="#annotated-cell-42-12"></a></span>
+<span id="annotated-cell-42-13"><a href="#annotated-cell-42-13"></a><span class="co"># make R session script executable and configure it to be bound into the container at runtime</span></span>
+<span id="annotated-cell-42-14"><a href="#annotated-cell-42-14"></a><span class="fu">chmod</span> +x <span class="va">${workdir}</span>/rsession.sh</span>
+<span id="annotated-cell-42-15"><a href="#annotated-cell-42-15"></a><span class="bu">export</span> <span class="va">SINGULARITY_BIND</span><span class="op">=</span><span class="st">"</span><span class="va">${workdir}</span><span class="st">/rsession.sh:/etc/rstudio/rsession.sh"</span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-41" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-42" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-41" data-code-lines="5" data-code-annotation="1">This uses the <code>"${HOME}"</code> directory by default. If you plan to use this for real analyses it’s not a bad idea to set this to use your <code>"${SCRATCHDIR}"</code>.</span>
+<span data-code-cell="annotated-cell-42" data-code-lines="5" data-code-annotation="1">This uses the <code>"${HOME}"</code> directory by default. If you plan to use this for real analyses it’s not a bad idea to set this to use your <code>"${SCRATCHDIR}"</code>.</span>
 </dd>
-<dt data-target-cell="annotated-cell-41" data-target-annotation="2">2</dt>
+<dt data-target-cell="annotated-cell-42" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-41" data-code-lines="8,9" data-code-annotation="2">If you’re a highly knowledgeable R user, set these variables to have greater control over the profile and environment used in your RStudio session.</span>
+<span data-code-cell="annotated-cell-42" data-code-lines="8,9" data-code-annotation="2">If you’re a highly knowledgeable R user, set these variables to have greater control over the profile and environment used in your RStudio session.</span>
 </dd>
 </dl>
 </section>
@@ -1248,18 +1326,18 @@ Trevor F. Freeman
 <div class="code-with-filename-file">
 <pre><strong>rstudio_server.sh</strong></pre>
 </div>
-<div class="sourceCode" id="annotated-cell-43" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode bash"><span id="annotated-cell-43-1"><a href="#annotated-cell-43-1"></a><span class="co"># set user ID and password for RStudio server</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-43-2" class="code-annotation-target"><a href="#annotated-cell-43-2"></a><span class="bu">export</span> <span class="va">SINGULARITYENV_USER</span><span class="op">=</span><span class="va">$(</span><span class="fu">whoami</span><span class="va">)</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-43-3" class="code-annotation-target"><a href="#annotated-cell-43-3"></a><span class="bu">export</span> <span class="va">SINGULARITYENV_PASSWORD</span><span class="op">=</span><span class="va">$(</span><span class="ex">openssl</span> rand <span class="at">-base64</span> 15<span class="va">)</span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="annotated-cell-44" data-filename="rstudio_server.sh"><pre class="sourceCode numberSource bash code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode bash"><span id="annotated-cell-44-1"><a href="#annotated-cell-44-1"></a><span class="co"># set user ID and password for RStudio server</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-44" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-44-2" class="code-annotation-target"><a href="#annotated-cell-44-2"></a><span class="bu">export</span> <span class="va">SINGULARITYENV_USER</span><span class="op">=</span><span class="va">$(</span><span class="fu">whoami</span><span class="va">)</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-44" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-44-3" class="code-annotation-target"><a href="#annotated-cell-44-3"></a><span class="bu">export</span> <span class="va">SINGULARITYENV_PASSWORD</span><span class="op">=</span><span class="va">$(</span><span class="ex">openssl</span> rand <span class="at">-base64</span> 15<span class="va">)</span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-43" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-44" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-43" data-code-lines="2" data-code-annotation="1">Username is your ISAAC username.</span>
+<span data-code-cell="annotated-cell-44" data-code-lines="2" data-code-annotation="1">Username is your ISAAC username.</span>
 </dd>
-<dt data-target-cell="annotated-cell-43" data-target-annotation="2">2</dt>
+<dt data-target-cell="annotated-cell-44" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-43" data-code-lines="3" data-code-annotation="2">Password is randomly generated. You can change this to a password of your choosing if desired, but be careful about checking this into version control, especially if it’s one of your usual passwords. I recommend just leaving this as a randomly generated password – we’ll see in a second that the password isn’t that important.</span>
+<span data-code-cell="annotated-cell-44" data-code-lines="3" data-code-annotation="2">Password is randomly generated. You can change this to a password of your choosing if desired, but be careful about checking this into version control, especially if it’s one of your usual passwords. I recommend just leaving this as a randomly generated password – we’ll see in a second that the password isn’t that important.</span>
 </dd>
 </dl>
 </section>
@@ -1438,6 +1516,7 @@ Trevor F. Freeman
 </div>
 <div class="sourceCode" id="cb46" data-filename="Terminal"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb46-1"><a></a><span class="fu">cat</span> .cache/sbatch_logs/<span class="op">&lt;</span>job ID<span class="op">&gt;</span>_-_rstudio_server.err</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Takes a while to build image file. Watch for changes to file with <code>wait tail -n 20 .cache/sbatch_logs/&lt;job ID&gt;_-_rstudio_server.err</code></p>
 </div>
 <div class="fragment">
 <ol start="3" type="1">

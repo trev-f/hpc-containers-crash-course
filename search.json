@@ -1,359 +1,1013 @@
 [
   {
-    "objectID": "slides/20241216-slides.html#utk-bioinformatics-useful-links",
-    "href": "slides/20241216-slides.html#utk-bioinformatics-useful-links",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "UTK bioinformatics useful links",
-    "text": "UTK bioinformatics useful links\n\nUTK Bioinformatics Consulting Services – A collaborative group of genomics and bioinformatics analysts and scientific computing specialists aimed at providing a range of research support and training to faculty, staff, and students.\nUTK Bioinformatics Newsletter – A monthly newsletter about the latest bioinformatics and computational biology research at the University of Tennessee.\nBioinformatics office hours\nHigh Performance & Scientific Computing\nUT Genomics Core"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#workshop-goals",
-    "href": "slides/20241216-slides.html#workshop-goals",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Workshop goals",
-    "text": "Workshop goals\n\nLearn to run software on ISAAC-NG using Apptainer containers\nRun CLI software from Apptainer containers\nStrategies to simplify container usage\nRun containers from Docker images on ISAAC-NG\nProvide resources for finding bioinformatics container images\nRun and connect to containerized RStudio server on ISAAC-NG"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#login-to-isaac-ng",
-    "href": "slides/20241216-slides.html#login-to-isaac-ng",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Login to ISAAC-NG",
-    "text": "Login to ISAAC-NG\nConnect to terminal session on ISAAC-NG login node\nMy preferred: ssh into login.isaac.utk.edu\n\n\nTerminal\n\nssh &lt;netid&gt;@login.isaac.utk.edu"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#setup-workshop-project-directory",
-    "href": "slides/20241216-slides.html#setup-workshop-project-directory",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Setup workshop project directory",
-    "text": "Setup workshop project directory\n\nCreate project directory in scratch\nNavigate into project directory\n\n\n\nTerminal\n\n# set variable for project directory\nproj_dir=\"${SCRATCHDIR}/hpc-containers-crash-course\"\n\n# create the project directory and navigate into it\nmkdir -p \"${proj_dir}\"\ncd \"${proj_dir}\"\n\n\n\n\n\n\n\n\nWorkshop project directory\n\n\nAssume that all commands in this mini workshop are run from the top level of this project directory unless explicitly stated otherwise."
-  },
-  {
-    "objectID": "slides/20241216-slides.html#start-interactive-compute-session",
-    "href": "slides/20241216-slides.html#start-interactive-compute-session",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Start interactive compute session",
-    "text": "Start interactive compute session\nInteractive compute session allows us to work directly on a compute node.\n\n\nTerminal\n\nsrun \\\n  --account ACF-UTK0011 \\\n  --partition short \\\n  --qos short \\\n  --cpus-per-task 1 \\\n  --time 02:00:00 \\\n  --pty \\\n  /bin/bash -i"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#toy-example-description",
-    "href": "slides/20241216-slides.html#toy-example-description",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Toy example description",
-    "text": "Toy example description\n\nPerform routine exploratory analysis of genomic alignments:\n\nHow many alignment records?\nWhat do stats look like?\nCan we tell what reference was used?\n\n\n\n\nData files: Alignments in BAM format with accompanying index\n\n\n\n\nBAMs are great candidate for exploring containerized software:\n\nTypically require specialized software to parse\nCommon format produced and used by many software tools"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#fetch-toy-data",
-    "href": "slides/20241216-slides.html#fetch-toy-data",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Fetch toy data",
-    "text": "Fetch toy data\n\nMake data directory\nDownload toy data files into directory\n\n\n\nTerminal\n\n# set variable for directory to store alignments in\nalignments_dir=\"data/alignments\"\n# create alignments directory\nmkdir -p \"${alignments_dir}\"\n\n# download BAM and index\nwget \\\n  -P \"${alignments_dir}\" \\\n  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam\nwget \\\n  -P \"${alignments_dir}\" \\\n  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam.bai"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#get-started-with-apptainer",
-    "href": "slides/20241216-slides.html#get-started-with-apptainer",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Get started with Apptainer",
-    "text": "Get started with Apptainer\nRun Apptainer\n\n\nTerminal\n\napptainer\n\nGet help with Apptainer and subcommands\n\n\nTerminal\n\n# get help with Apptainer\napptainer help\n\n# get help with Apptainer subcommands\napptainer help pull\n# same as -h/--help flag\napptainer pull -h\napptainer pull --help"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#terminology-note-apptainer-is-singularity",
-    "href": "slides/20241216-slides.html#terminology-note-apptainer-is-singularity",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Terminology note: Apptainer is Singularity",
-    "text": "Terminology note: Apptainer is Singularity\nBoth Apptainer and Singularity commands show same version\n\n\nTerminal\n\napptainer --version\nsingularity --version\n\nRunning singularity launches Apptainer\n\n\nTerminal\n\n# find executables for Apptainer and Singularity\nwhich apptainer\nwhich singularity\n\n# show more info about those executables\nls -lh /usr/bin/apptainer /usr/bin/singularity\n\nSingularity Compatibility in Apptainer docs"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#configure-apptainer-cache",
-    "href": "slides/20241216-slides.html#configure-apptainer-cache",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Configure Apptainer cache",
-    "text": "Configure Apptainer cache\nSet Apptainer to cache images in scratch directory\n\n\n~/.bashrc\n\nexport APPTAINER_CACHE=\"${SCRATCHDIR}/.apptainer/cache\"\n\nRestart your shell session to load this environment variable\n\n\nTerminal\n\nexec bash\n\n\n\n\n\n\n\n\n\nApptainer cache\n\n\nApptainer does some image management for us. When it fetches an image from a remote location, it caches those images to prevent repeatedly downloading them. By default, it uses $HOME/.apptainer/cache for its cache directory. Home directories on ISAAC-NG are rather small, and Apptainer images can be large, so it makes sense to store these in scratch."
-  },
-  {
-    "objectID": "slides/20241216-slides.html#apptainer-pull-get-apptainer-image-from-remote-uri",
-    "href": "slides/20241216-slides.html#apptainer-pull-get-apptainer-image-from-remote-uri",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "apptainer pull – Get Apptainer image from remote URI",
-    "text": "apptainer pull – Get Apptainer image from remote URI\nView help docs\n\n\nTerminal\n\napptainer help pull\n\nBasic usage – apptainer pull [output file] &lt;URI&gt;\n\nPull Samtools image – We’ll use Samtools to analyze BAM file\n\n\nTerminal\n\n# set variable for Samtools image URI\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n\n# pull the apptainer image\napptainer pull samtools_1-21.sif \"${samtools_img_uri}\""
-  },
-  {
-    "objectID": "slides/20241216-slides.html#three-ways-to-interact-with-an-image",
-    "href": "slides/20241216-slides.html#three-ways-to-interact-with-an-image",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Three ways to interact with an image",
-    "text": "Three ways to interact with an image\n\napptainer shell &lt;image&gt; – Spawn interactive shell in container\n\n\nUseful for interactively exploring a container\nNot suitable for scripting\n\n\n\napptainer run &lt;image&gt; [arguments] – Run the container runscript\n\n\nSimple way to run software in container\nRelies on the way the runscript is specified by the container’s creator\nMay not accept arguments in expected manner\n\n\n\n\napptainer exec &lt;image&gt; &lt;command&gt; – Execute custom command in container\n\n\nMost reliable way to run software in container\nGenerally works as expected\nRecommended for scripting"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#apptainer-shell-basics",
-    "href": "slides/20241216-slides.html#apptainer-shell-basics",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "apptainer shell – Basics",
-    "text": "apptainer shell – Basics\nEnter interactive shell session in container\n\n\nTerminal\n\napptainer shell samtools_1-21.sif\n\n\nHow to tell you’re in container shell session:\n\nCommand prompt says “Singularity” – Unreliable\necho \"${APPTAINER_NAME}\" prints name of container\n\n\n\nExit interactive shell session and close container\n\n\nApptainer shell\n\nexit\n\nMay also be able to use Ctrl-dCtrl-d"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#apptainer-shell-software-in-the-samtools-container",
-    "href": "slides/20241216-slides.html#apptainer-shell-software-in-the-samtools-container",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "apptainer shell – Software in the Samtools container",
-    "text": "apptainer shell – Software in the Samtools container\nEnter interactive shell session in container\n\n\nTerminal\n\napptainer shell samtools_1-21.sif\n\n\nSamtools is available inside the container\n\n\nApptainer shell\n\n# show samtools help\nsamtools version\n# show information about the samtools command\ntype samtools\n\n\n\nSoftware available on the ISAAC-NG host OS is not available in the container\n\n\nApptainer shell\n\n# commands that aren't available in the container will fail\napptainer --version\nmodule avail"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#apptainer-shell-files-in-the-samtools-container",
-    "href": "slides/20241216-slides.html#apptainer-shell-files-in-the-samtools-container",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "apptainer shell – Files in the Samtools container",
-    "text": "apptainer shell – Files in the Samtools container\nDirectly access files in project directory\n\n\nApptainer shell\n\n# print BAM file header\nsamtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nThanks to the ISAAC-NG sys admins, all of your favorite ISAAC-NG directories are accessible inside of containers right where we expect them to be!\n\n\nApptainer shell\n\n# look into your home and scratch directories\nls \"${HOME}\"\nls \"${SCRATCHDIR}\"\n\n# look into the list of project directories\nls /lustre/isaac/proj"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#apptainer-run-relies-on-runscript",
-    "href": "slides/20241216-slides.html#apptainer-run-relies-on-runscript",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "apptainer run – Relies on runscript",
-    "text": "apptainer run – Relies on runscript\nView runscript built into container – May be hard to parse\n\n\nTerminal\n\n# print the runscript\napptainer inspect --runscript samtools_1-21.sif\n\n\nRun the Samtools container\n\n\nTerminal\n\n# run the samtools container runscript\napptainer run samtools_1-21.sif\n\nRun Samtools in the Samtools container\n\n\nTerminal\n\n# run samtools in the samtools container runscript by supplying command line args\napptainer run samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\n\napptainer run\n\n\nRunning this command is completely dependent on how the runscript is setup"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#apptainer-exec-execute-samtools-directly-in-container",
-    "href": "slides/20241216-slides.html#apptainer-exec-execute-samtools-directly-in-container",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "apptainer exec – Execute samtools directly in container",
-    "text": "apptainer exec – Execute samtools directly in container\n\n\nTerminal\n\n# print BAM file header with command directly executed in container\napptainer exec samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\napptainer exec\n\n\nRunning this command is completely independent from how the container is setup.\nIf 1) the software is available in the container and 2) the file can be accessed in the container, the command should run."
-  },
-  {
-    "objectID": "slides/20241216-slides.html#run-apptainer-conclusions-useful-commands",
-    "href": "slides/20241216-slides.html#run-apptainer-conclusions-useful-commands",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Run Apptainer conclusions – Useful commands",
-    "text": "Run Apptainer conclusions – Useful commands\n\nGet Apptainer image from remote URI – apptainer pull\n\n\n\nInteract with Apptainer image with one of three commands\n\nExplore container – apptainer shell\nExecute command inside container – apptainer exec\nRun specific script that you know has been set as runscript – apptainer run"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#run-apptainer-conclusions-software-and-files",
-    "href": "slides/20241216-slides.html#run-apptainer-conclusions-software-and-files",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Run Apptainer conclusions – Software and files",
-    "text": "Run Apptainer conclusions – Software and files\n\nYou shouldn’t need to bind any files into Apptainer containers on ISAAC-NG for normal use\n\nSys admins took care of this for you!\nCaveat: Some (rare) containers may expect files in specific locations. Look into bind paths and mounts\n\n\n\n\nContainers allow you to run the software that is available inside the container\nYou cannot run software available on the host OS inside the container"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#get-quick-alignments-info",
-    "href": "slides/20241216-slides.html#get-quick-alignments-info",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Get quick alignments info",
-    "text": "Get quick alignments info\nCount records in BAM with Samtools – samtools view -c &lt;input.bam&gt;\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nQuick alignment stats – samtools flagstat &lt;input.bam&gt;\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools flagstat data/alignments/wt_antiflag_ip1_rep1.bam"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#get-info-about-high-quality-alignments",
-    "href": "slides/20241216-slides.html#get-info-about-high-quality-alignments",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Get info about high quality alignments",
-    "text": "Get info about high quality alignments\nCount high quality records in BAM – samtools view -c -q 10 &lt;input.bam&gt;\nFilters reads by minimum MAPQ (mapping quality)\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -c -q 10 data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nQuick alignment stats of filtered BAM file – samtools view -h -q 10 &lt;input.bam&gt; | samtools flagstat -\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | samtools flagstat -\n\n\n\n\n\n\n\n\n\n\nPipes in Apptainer\n\n\nApptainer containers work with pipes and redirects. stdout/stdin/stderr goes back and forth between the container and our OS. In the command above, the filtered BAM stream from the container is piped into the samtools command executed on our OS. We don’t have the samtools command available on our OS, so this fails."
-  },
-  {
-    "objectID": "slides/20241216-slides.html#get-high-quality-alignments-quick-stats",
-    "href": "slides/20241216-slides.html#get-high-quality-alignments-quick-stats",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Get high quality alignments quick stats",
-    "text": "Get high quality alignments quick stats\nPipe out of one container and into another\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | apptainer exec samtools_1-21.sif samtools flagstat -"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#package-bam-analysis-into-a-script",
-    "href": "slides/20241216-slides.html#package-bam-analysis-into-a-script",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Package BAM analysis into a script",
-    "text": "Package BAM analysis into a script\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# pull samtools image if it doesn't already exist\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nif [ ! -e samtools_1-21.sif ]; then\n  apptainer pull samtools_1-21.sif \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools view -h -q 10 \"${input_bam}\" | apptainer exec samtools_1-21.sif samtools flagstat -\n\nRun the BAM stats script\n\n\nTerminal\n\nbash compute_bam_stats.sh data/alignments/wt_antiflag_ip1_rep1.bam"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#script-is-full-of-duplicated-code",
-    "href": "slides/20241216-slides.html#script-is-full-of-duplicated-code",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Script is full of duplicated code",
-    "text": "Script is full of duplicated code\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# pull samtools image if it doesn't already exist\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nif [ ! -e samtools_1-21.sif ]; then\n  apptainer pull samtools_1-21.sif \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools view -h -q 10 \"${input_bam}\" | apptainer exec samtools_1-21.sif samtools flagstat -\n\nNumerous explicit uses of apptainer pull/exec samtools_1-21.sif\n\nDifficult to maintain and error prone – What if we want to update to Samtools v1.22?\nVerbose – Repetition obscures program logic"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#simplify-script-use-variable-for-image-path",
-    "href": "slides/20241216-slides.html#simplify-script-use-variable-for-image-path",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Simplify script – Use variable for image path",
-    "text": "Simplify script – Use variable for image path\nSimple refactor: Replace explicit references to image path with a variable\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# set Samtools remote image URI and local image path\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nsamtools_img_path=\"samtools_1-21.sif\"\n\n# pull samtools image if it doesn't already exist\nif [ ! -e \"${samtools_img_path}\" ]; then\n  apptainer pull \"${samtools_img_path}\" \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec \"${samtools_img_path}\" samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec \"${samtools_img_path}\" samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec \"${samtools_img_path}\" samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec \"${samtools_img_path}\" samtools view -h -q 10 \"${input_bam}\" | apptainer exec \"${samtools_img_path}\" samtools flagstat -"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#execute-container-directly-from-remote-image-uri",
-    "href": "slides/20241216-slides.html#execute-container-directly-from-remote-image-uri",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Execute container directly from remote image URI",
-    "text": "Execute container directly from remote image URI\nCheck apptainer exec docs.\n\n\nTerminal\n\napptainer help exec\n\nMany URI types are listed as valid &lt;container&gt; options. https://* is not among them, but it works.\n\napptainer exec with remote image URI pulls and caches remote image and executes command inside container\n\n\nTerminal\n\n# set variable for Samtools image URI\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n\n# run samtools from the container using its URI\napptainer exec \"${samtools_img_uri}\" samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#simplify-script-execute-from-remote-image-uri",
-    "href": "slides/20241216-slides.html#simplify-script-execute-from-remote-image-uri",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Simplify script – Execute from remote image URI",
-    "text": "Simplify script – Execute from remote image URI\nLarger refactor:\n\nRemove explicit image pull\nExecute from remote image URI instead of local image path\n\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# set Samtools remote image URI\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec \"${samtools_img_uri}\" samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec \"${samtools_img_uri}\" samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec \"${samtools_img_uri}\" samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec \"${samtools_img_uri}\" samtools view -h -q 10 \"${input_bam}\" | apptainer exec \"${samtools_img_uri}\" samtools flagstat -"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#simulate-loading-software-with-function",
-    "href": "slides/20241216-slides.html#simulate-loading-software-with-function",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Simulate “loading” software with function",
-    "text": "Simulate “loading” software with function\nAbstracts away the fact we’re using a container from the main program logic\n\n\nTerminal\n\n# make function to execute Samtools in Apptainer container\nfunction samtools {\n  local img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n  apptainer exec \"${img_uri}\" samtools \"${@}\"\n}\n\n# run samtools from the container using its function\nsamtools view -c data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\n‘Load’ container from function\n\n\nThe abstraction makes this method powerful and expressive, but it introduces some overhead. Since samtools is a function and not an executable file, there will be situations in which it doesn’t behave as running the typical command. There could also be some scenarios where passing arguments to the samtools command in the container through the samtools function doesn’t behave as expected.\nLong story short: beware of edge cases. This abstraction is best for experienced script writers or very straightforward use cases."
-  },
-  {
-    "objectID": "slides/20241216-slides.html#simplify-script-use-function-to-simulate-loading-software",
-    "href": "slides/20241216-slides.html#simplify-script-use-function-to-simulate-loading-software",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Simplify script – Use function to simulate “loading” software",
-    "text": "Simplify script – Use function to simulate “loading” software\nMost significant refactor: Replace individual apptainer exec commands with calls to samtools function\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# make function to execute Samtools in Apptainer container\nfunction samtools {\n  local img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n  apptainer exec \"${img_uri}\" samtools \"${@}\"\n}\n\n# print alignment stats\necho \"Number records in BAM:\"\nsamtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\nsamtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\nsamtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\nsamtools view -h -q 10 \"${input_bam}\" | samtools flagstat -"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#summarize-abstractions",
-    "href": "slides/20241216-slides.html#summarize-abstractions",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Summarize abstractions",
-    "text": "Summarize abstractions\n\nVariable image path\n\nSimple – makes container usage obvious\nDoesn’t require internet access if local image already exists\nRequires explicit image pull\nMaintain remote image URI and local image path\n\n\n\n\nExecute directly from URI\n\nMaintain only remote image URI\nNo explicit image pull step\nRequires internet access even if image already pulled locally\n\n\n\n\n\n“Load” software with function\n\nMakes program logic easier to see\nMay be some edge cases\nOther users may be unaware container is used"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#what-is-docker",
-    "href": "slides/20241216-slides.html#what-is-docker",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "What is Docker?",
-    "text": "What is Docker?\nAccording to Docker:\n\n“The Industry-Leading Container Runtime”\n“Docker Engine is the industry’s de facto container runtime”\n\n\nUntil recently Docker was nearly synonymous with containerization\nStill immensely popular – Borderline default containerization option\n\n\nTerrible for HPCs – Almost always completely unavailable"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#apptainer-works-with-docker-images-1",
-    "href": "slides/20241216-slides.html#apptainer-works-with-docker-images-1",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Apptainer works with Docker images",
-    "text": "Apptainer works with Docker images\nSimply use the correct URI\nPrepend images on Dockerhub or quay.io with docker:// instead of our usual https://\n\n\nTerminal\n\n# run samtools container from docker image\napptainer exec docker://quay.io/biocontainers/samtools:1.21--h50ea8bc_0 samtools head data/alignments/wt_antiflag_ip1_rep1.bam"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#remote-image-considerations",
-    "href": "slides/20241216-slides.html#remote-image-considerations",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Remote image considerations",
-    "text": "Remote image considerations\nNeed to balance several factors:\n\nReliability & stability – Will the image be there the next time you try to pull it?\nUpdates – Will new images be made available with updated versions of software?\nAccessibility – Is it easy to find and use the images when you need them? Are they reasonably sized?\nSecurity – Does the container do what you need it to do without any weird side effects?"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#remote-image-sources",
-    "href": "slides/20241216-slides.html#remote-image-sources",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Remote image sources",
-    "text": "Remote image sources\n\nOfficial image from software authors/maintainers\n\nUp to date and stable – Only as good as the maintainers\nExample: Google DeepVariant\n\n\n\n\nLarge, community driven resources – Especially for general software\n\nHighly stable\nFrequently updated\nExample: Rocker project for R environment\n\n\n\n\n\nBioContainers container registry\n\nExcellent resource for popular (and many unpopular) bioinformatics programs\nMany versions available and frequently updated\nHighly stable"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#other-image-sources",
-    "href": "slides/20241216-slides.html#other-image-sources",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Other image sources",
-    "text": "Other image sources\n\nPublic repositories, e.g. other people’s images on Docker Hub\n\nLimited reliability\nMinor security concerns\nNo guaranteed updates\nUsually last resort\n\n\n\n\nBuild custom image\n\nApptainer build from definition file\nGives you the power to do almost anything – This is a pro and a con\nOnly as straightforward as installing the software you need to containerize"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#containerized-rstudio-server-on-isaac-ng",
-    "href": "slides/20241216-slides.html#containerized-rstudio-server-on-isaac-ng",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Containerized RStudio server on ISAAC-NG",
-    "text": "Containerized RStudio server on ISAAC-NG\nWhy?\n\nAvoid moving data on and off HPC\nAccess more resources than local computer\nRun long jobs that would be difficult to run locally\n\n\nHow?\n\nUse RStudio server image\nWrite Slurm job submission script\nExpose port we can safely and securely access"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#rocker-project-slurm-script",
-    "href": "slides/20241216-slides.html#rocker-project-slurm-script",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Rocker project Slurm script",
-    "text": "Rocker project Slurm script\nUseful links from the Rocker project\n\nRocker RStudio server image\nRocker singularity\n\nIn the next several slides, we’ll build a Slurm job submission script based on the Rocker example script."
-  },
-  {
-    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-sbatch-headers",
-    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-sbatch-headers",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "RStudio server Slurm script – SBATCH headers",
-    "text": "RStudio server Slurm script – SBATCH headers\nSBATCH headers control job submission configurations\n\n\nrstudio_server.sh\n\n#!/bin/bash\n#SBATCH --job-name=rstudio_server\n1#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err\n2#SBATCH --output=/dev/null\n#SBATCH --signal=USR2\n#SBATCH --account=ACF-UTK0011\n#SBATCH --partition=short\n#SBATCH --qos=short\n#SBATCH --cpus-per-task=1\n#SBATCH --mem=4GB\n#SBATCH --time=00-00:15:00\n\n\n1\n\nWe log useful information about how to access our RStudio server session into the stderr file.\n\n2\n\nWe don’t need anything from stdout."
-  },
-  {
-    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-tmp-directory",
-    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-tmp-directory",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "RStudio server Slurm script – tmp directory",
-    "text": "RStudio server Slurm script – tmp directory\nCreate a temporary directory specific to your user session so that your specific temporary files don’t clash those of other users.\n\n\nrstudio_server.sh\n\n# Create temporary directory to be populated with directories to bind-mount in the container\n# where writable file systems are necessary. Adjust path as appropriate for your computing environment.\nworkdir=$(mktemp -d)"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-configure-r-session",
-    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-configure-r-session",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "RStudio server Slurm script – Configure R session",
-    "text": "RStudio server Slurm script – Configure R session\nConfigure R session to use R packages/libraries that won’t conflict with those from another R session and installation you have.\n\n\nrstudio_server.sh\n\n# Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with\n# personal libraries from any R installation in the host environment\ncat &gt; ${workdir}/rsession.sh &lt;&lt;\"END\"\n#!/bin/sh\n1export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2\nmkdir -p \"${R_LIBS_USER}\"\n## custom Rprofile & Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)\n2# export R_PROFILE_USER=/path/to/Rprofile\n# export R_ENVIRON_USER=/path/to/Renviron\nexec /usr/lib/rstudio-server/bin/rsession \"${@}\"\nEND\n\n# make R session script executable and configure it to be bound into the container at runtime\nchmod +x ${workdir}/rsession.sh\nexport SINGULARITY_BIND=\"${workdir}/rsession.sh:/etc/rstudio/rsession.sh\"\n\n\n1\n\nThis uses the \"${HOME}\" directory by default. If you plan to use this for real analyses it’s not a bad idea to set this to use your \"${SCRATCHDIR}\".\n\n2\n\nIf you’re a highly knowledgeable R user, set these variables to have greater control over the profile and environment used in your RStudio session."
-  },
-  {
-    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-do-not-suspend-idle-sessions",
-    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-do-not-suspend-idle-sessions",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "RStudio server Slurm script – Do not suspend idle sessions",
-    "text": "RStudio server Slurm script – Do not suspend idle sessions\n\n\nrstudio_server.sh\n\n# Do not suspend idle sessions.\n# Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf\n# https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126\nexport SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT=0"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-authorization",
-    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-authorization",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "RStudio server Slurm script – Authorization",
-    "text": "RStudio server Slurm script – Authorization\nRequire a username and password for additional security\n\n\nrstudio_server.sh\n\n# set user ID and password for RStudio server\n1export SINGULARITYENV_USER=$(whoami)\n2export SINGULARITYENV_PASSWORD=$(openssl rand -base64 15)\n\n\n1\n\nUsername is your ISAAC username.\n\n2\n\nPassword is randomly generated. You can change this to a password of your choosing if desired, but be careful about checking this into version control, especially if it’s one of your usual passwords. I recommend just leaving this as a randomly generated password – we’ll see in a second that the password isn’t that important."
-  },
-  {
-    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-get-open-port",
-    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-get-open-port",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "RStudio server Slurm script – Get open port",
-    "text": "RStudio server Slurm script – Get open port\nWe have to have an open port to expose our RStudio server. Since ISAAC is a shared resource, many of the ports will likely be taken, so we have to find and use an available one.\n\n\nrstudio_server.sh\n\n# get unused socket per https://unix.stackexchange.com/a/132524\n# tiny race condition between the python & singularity commands\nreadonly PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind((\"\", 0)); print(s.getsockname()[1]); s.close()')"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-write-session-usage-directions",
-    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-write-session-usage-directions",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "RStudio server Slurm script – Write session usage directions",
-    "text": "RStudio server Slurm script – Write session usage directions\nWrite RStudio server session usage directions to stderr. We will access these in the error file specified in the SBATCH header.\n\n\nrstudio_server.sh\n\n# write session usage information to stderr\ncat 1&gt;&2 &lt;&lt;END\n1. SSH tunnel from your workstation using the following command:\n\n   ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@login.isaac.utk.edu\n\n   and point your web browser to http://localhost:8787\n\n2. log in to RStudio Server using the following credentials:\n\n   user: ${SINGULARITYENV_USER}\n   password: ${SINGULARITYENV_PASSWORD}\n\nWhen done using RStudio Server, terminate the job by:\n\n1. Exit the RStudio Session (\"power\" button in the top right corner of the RStudio window)\n2. Issue the following command on the login node:\n\n      scancel -f ${SLURM_JOB_ID}\nEND"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-launch-rstudio-server",
-    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-launch-rstudio-server",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "RStudio server Slurm script – Launch RStudio server",
-    "text": "RStudio server Slurm script – Launch RStudio server\nHere we actually run the RStudio server command that starts the RStudio server session we will connect to.\n\n\nrstudio_server.sh\n\n# run RStudio Server from apptainer image\nreadonly rstudio_server_img_uri=\"docker://rocker/rstudio:4.4.2\"\napptainer exec \\\n  --cleanenv \\\n  --scratch /run,/tmp,/var/lib/rstudio-server \\\n  --workdir ${workdir} \\\n  \"${rstudio_server_img_uri}\" \\\n  rserver --www-port ${PORT} \\\n  --auth-none=0 \\\n  --auth-pam-helper-path=pam-helper \\\n  --server-user=$(whoami) \\\n  --auth-stay-signed-in-days=30 \\\n  --auth-timeout-minutes=0 \\\n  --rsession-path=/etc/rstudio/rsession.sh\nprintf 'rserver exited' 1&gt;&2"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-full-script",
-    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-full-script",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "RStudio server Slurm script – Full script",
-    "text": "RStudio server Slurm script – Full script\n\n\nrstudio_server.sh\n\n#!/bin/bash\n#SBATCH --job-name=rstudio_server\n#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err\n#SBATCH --output=/dev/null\n#SBATCH --signal=USR2\n#SBATCH --account=ACF-UTK0011\n#SBATCH --partition=short\n#SBATCH --qos=short\n#SBATCH --cpus-per-task=1\n#SBATCH --mem=4GB\n#SBATCH --time=00-00:15:00\n\n# Create temporary directory to be populated with directories to bind-mount in the container\n# where writable file systems are necessary. Adjust path as appropriate for your computing environment.\nworkdir=$(mktemp -d)\n\n# Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with\n# personal libraries from any R installation in the host environment\ncat &gt; ${workdir}/rsession.sh &lt;&lt;\"END\"\n#!/bin/sh\nexport R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2\nmkdir -p \"${R_LIBS_USER}\"\n## custom Rprofile & Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)\n# export R_PROFILE_USER=/path/to/Rprofile\n# export R_ENVIRON_USER=/path/to/Renviron\nexec /usr/lib/rstudio-server/bin/rsession \"${@}\"\nEND\n\n# make R session script executable and configure it to be bound into the container at runtime\nchmod +x ${workdir}/rsession.sh\nexport SINGULARITY_BIND=\"${workdir}/rsession.sh:/etc/rstudio/rsession.sh\"\n\n# Do not suspend idle sessions.\n# Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf\n# https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126\nexport SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT=0\n\n# set user ID and password for RStudio server\nexport SINGULARITYENV_USER=$(whoami)\nexport SINGULARITYENV_PASSWORD=$(openssl rand -base64 15)\n\n# get unused socket per https://unix.stackexchange.com/a/132524\n# tiny race condition between the python & singularity commands\nreadonly PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind((\"\", 0)); print(s.getsockname()[1]); s.close()')\n\n# write session usage information to stderr\ncat 1&gt;&2 &lt;&lt;END\n1. SSH tunnel from your workstation using the following command:\n\n   ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@login.isaac.utk.edu\n\n   and point your web browser to http://localhost:8787\n\n2. log in to RStudio Server using the following credentials:\n\n   user: ${SINGULARITYENV_USER}\n   password: ${SINGULARITYENV_PASSWORD}\n\nWhen done using RStudio Server, terminate the job by:\n\n1. Exit the RStudio Session (\"power\" button in the top right corner of the RStudio window)\n2. Issue the following command on the login node:\n\n      scancel -f ${SLURM_JOB_ID}\nEND\n\n# run RStudio Server from apptainer image\nreadonly rstudio_server_img_uri=\"docker://rocker/rstudio:4.4.2\"\napptainer exec \\\n  --cleanenv \\\n  --scratch /run,/tmp,/var/lib/rstudio-server \\\n  --workdir ${workdir} \\\n  \"${rstudio_server_img_uri}\" \\\n  rserver --www-port ${PORT} \\\n  --auth-none=0 \\\n  --auth-pam-helper-path=pam-helper \\\n  --server-user=$(whoami) \\\n  --auth-stay-signed-in-days=30 \\\n  --auth-timeout-minutes=0 \\\n  --rsession-path=/etc/rstudio/rsession.sh\nprintf 'rserver exited' 1&gt;&2"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#run-rstudio-server-slurm-job",
-    "href": "slides/20241216-slides.html#run-rstudio-server-slurm-job",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Run RStudio server Slurm job",
-    "text": "Run RStudio server Slurm job\n\nSubmit job to Slurm scheduler\n\n\n\nTerminal\n\nsbatch rstudio_server.sh\n\n\n\nPrint captured usage info from job error file\n\n\n\nTerminal\n\ncat .cache/sbatch_logs/&lt;job ID&gt;_-_rstudio_server.err\n\n\n\n\nOpen a new terminal session on your local machine – NOT ISAAC-NG. Run the ssh command from the error file. Authenticate and leave the SSH session open.\n\n\n\nTerminal\n\nssh -N -L 8787:&lt;host&gt;:&lt;port&gt; &lt;user&gt;@login.isaac.utk.edu\n\n\n\n\nOpen browser window and connect to RStudio server URL: http://localhost:8787/\n\nAuthenticate using the username and password listed in your error file."
-  },
-  {
-    "objectID": "slides/20241216-slides.html#workshop-goals-how-do-we-feel",
-    "href": "slides/20241216-slides.html#workshop-goals-how-do-we-feel",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "Workshop goals – How do we feel?",
-    "text": "Workshop goals – How do we feel?\n\nLearn to run software on ISAAC-NG using Apptainer containers\nRun CLI software from Apptainer containers\nStrategies to simplify container usage\nRun containers from Docker images on ISAAC-NG\nProvide resources for finding bioinformatics container images\nRun and connect to containerized RStudio server on ISAAC-NG"
-  },
-  {
-    "objectID": "slides/20241216-slides.html#when-would-you-use-containers",
-    "href": "slides/20241216-slides.html#when-would-you-use-containers",
-    "title": "Using Containerized Software on HPC for Bioinformatics",
-    "section": "When would you use containers?",
-    "text": "When would you use containers?\n\nTry out new version of software\n\n\nReplace Conda\n\nNo more environment headaches\nNo need to setup channels properly\nNo more accidentally installing software into wrong environment\nNo more version clashes\n\n\n\nShare scripts\n\nIf it works for you, it should work for your collaborators\nIf 1) the software is available in the container and 2) the file can be accessed in the container, the command should run.\n\n\n\nWorkflows/pipelines\n\nContainers + atomized workflow steps are the perfect match"
-  },
-  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "HPC Containers Crash Course",
     "section": "",
-    "text": "This is the home page for a 1-2 hour mini workshop that will provide a hands-on crash course on utilizing Apptainer to run software containers on UTK’s ISAAC-NG HPC.\n\n\nDec. 16, 2024 – Slides"
+    "text": "This is the home page for a 1-2 hour mini workshop that will provide a hands-on crash course on utilizing Apptainer to run software containers on UTK’s ISAAC-NG HPC.\n\n\nAug. 14, 2025 – HPSC: Using Containers Slides\n\n\n\nDec. 16, 2024 – Containers Mini Workshop Slides"
   },
   {
     "objectID": "index.html#current-materials",
     "href": "index.html#current-materials",
     "title": "HPC Containers Crash Course",
     "section": "",
-    "text": "Dec. 16, 2024 – Slides"
+    "text": "Aug. 14, 2025 – HPSC: Using Containers Slides"
+  },
+  {
+    "objectID": "index.html#past-materials",
+    "href": "index.html#past-materials",
+    "title": "HPC Containers Crash Course",
+    "section": "",
+    "text": "Dec. 16, 2024 – Containers Mini Workshop Slides"
+  },
+  {
+    "objectID": "slides/20241216-slides.html#utk-bioinformatics-useful-links",
+    "href": "slides/20241216-slides.html#utk-bioinformatics-useful-links",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "UTK bioinformatics useful links",
+    "text": "UTK bioinformatics useful links\n\nUTK Bioinformatics Consulting Services – A collaborative group of genomics and bioinformatics analysts and scientific computing specialists aimed at providing a range of research support and training to faculty, staff, and students.\nUTK Bioinformatics Newsletter – A monthly newsletter about the latest bioinformatics and computational biology research at the University of Tennessee.\nBioinformatics office hours\nHigh Performance & Scientific Computing\nUT Genomics Core",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#workshop-goals",
+    "href": "slides/20241216-slides.html#workshop-goals",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Workshop goals",
+    "text": "Workshop goals\n\nLearn to run software on ISAAC-NG using Apptainer containers\nRun CLI software from Apptainer containers\nStrategies to simplify container usage\nRun containers from Docker images on ISAAC-NG\nProvide resources for finding bioinformatics container images\nRun and connect to containerized RStudio server on ISAAC-NG",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#login-to-isaac-ng",
+    "href": "slides/20241216-slides.html#login-to-isaac-ng",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Login to ISAAC-NG",
+    "text": "Login to ISAAC-NG\nConnect to terminal session on ISAAC-NG login node\nMy preferred: ssh into login.isaac.utk.edu\n\n\nTerminal\n\nssh &lt;netid&gt;@login.isaac.utk.edu",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#setup-workshop-project-directory",
+    "href": "slides/20241216-slides.html#setup-workshop-project-directory",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Setup workshop project directory",
+    "text": "Setup workshop project directory\n\nCreate project directory in scratch\nNavigate into project directory\n\n\n\nTerminal\n\n# set variable for project directory\nproj_dir=\"${SCRATCHDIR}/hpc-containers-crash-course\"\n\n# create the project directory and navigate into it\nmkdir -p \"${proj_dir}\"\ncd \"${proj_dir}\"\n\n\n\n\n\n\n\n\nWorkshop project directory\n\n\nAssume that all commands in this mini workshop are run from the top level of this project directory unless explicitly stated otherwise.",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#start-interactive-compute-session",
+    "href": "slides/20241216-slides.html#start-interactive-compute-session",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Start interactive compute session",
+    "text": "Start interactive compute session\nInteractive compute session allows us to work directly on a compute node.\n\n\nTerminal\n\nsrun \\\n  --account ACF-UTK0011 \\\n  --partition short \\\n  --qos short \\\n  --cpus-per-task 1 \\\n  --time 02:00:00 \\\n  --pty \\\n  /bin/bash -i",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#toy-example-description",
+    "href": "slides/20241216-slides.html#toy-example-description",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Toy example description",
+    "text": "Toy example description\n\nPerform routine exploratory analysis of genomic alignments:\n\nHow many alignment records?\nWhat do stats look like?\nCan we tell what reference was used?\n\n\n\n\nData files: Alignments in BAM format with accompanying index\n\n\n\n\nBAMs are great candidate for exploring containerized software:\n\nTypically require specialized software to parse\nCommon format produced and used by many software tools",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#fetch-toy-data",
+    "href": "slides/20241216-slides.html#fetch-toy-data",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Fetch toy data",
+    "text": "Fetch toy data\n\nMake data directory\nDownload toy data files into directory\n\n\n\nTerminal\n\n# set variable for directory to store alignments in\nalignments_dir=\"data/alignments\"\n# create alignments directory\nmkdir -p \"${alignments_dir}\"\n\n# download BAM and index\nwget \\\n  -P \"${alignments_dir}\" \\\n  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam\nwget \\\n  -P \"${alignments_dir}\" \\\n  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam.bai",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#get-started-with-apptainer",
+    "href": "slides/20241216-slides.html#get-started-with-apptainer",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Get started with Apptainer",
+    "text": "Get started with Apptainer\nRun Apptainer\n\n\nTerminal\n\napptainer\n\nGet help with Apptainer and subcommands\n\n\nTerminal\n\n# get help with Apptainer\napptainer help\n\n# get help with Apptainer subcommands\napptainer help pull\n# same as -h/--help flag\napptainer pull -h\napptainer pull --help",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#terminology-note-apptainer-is-singularity",
+    "href": "slides/20241216-slides.html#terminology-note-apptainer-is-singularity",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Terminology note: Apptainer is Singularity",
+    "text": "Terminology note: Apptainer is Singularity\nBoth Apptainer and Singularity commands show same version\n\n\nTerminal\n\napptainer --version\nsingularity --version\n\nRunning singularity launches Apptainer\n\n\nTerminal\n\n# find executables for Apptainer and Singularity\nwhich apptainer\nwhich singularity\n\n# show more info about those executables\nls -lh /usr/bin/apptainer /usr/bin/singularity\n\nSingularity Compatibility in Apptainer docs",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#configure-apptainer-cache",
+    "href": "slides/20241216-slides.html#configure-apptainer-cache",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Configure Apptainer cache",
+    "text": "Configure Apptainer cache\nSet Apptainer to cache images in scratch directory\n\n\n~/.bashrc\n\nexport APPTAINER_CACHE=\"${SCRATCHDIR}/.apptainer/cache\"\n\nRestart your shell session to load this environment variable\n\n\nTerminal\n\nexec bash\n\n\n\n\n\n\n\n\n\nApptainer cache\n\n\nApptainer does some image management for us. When it fetches an image from a remote location, it caches those images to prevent repeatedly downloading them. By default, it uses $HOME/.apptainer/cache for its cache directory. Home directories on ISAAC-NG are rather small, and Apptainer images can be large, so it makes sense to store these in scratch.",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-pull-get-apptainer-image-from-remote-uri",
+    "href": "slides/20241216-slides.html#apptainer-pull-get-apptainer-image-from-remote-uri",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "apptainer pull – Get Apptainer image from remote URI",
+    "text": "apptainer pull – Get Apptainer image from remote URI\nView help docs\n\n\nTerminal\n\napptainer help pull\n\nBasic usage – apptainer pull [output file] &lt;URI&gt;\n\nPull Samtools image – We’ll use Samtools to analyze BAM file\n\n\nTerminal\n\n# set variable for Samtools image URI\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n\n# pull the apptainer image\napptainer pull samtools_1-21.sif \"${samtools_img_uri}\"",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#three-ways-to-interact-with-an-image",
+    "href": "slides/20241216-slides.html#three-ways-to-interact-with-an-image",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Three ways to interact with an image",
+    "text": "Three ways to interact with an image\n\napptainer shell &lt;image&gt; – Spawn interactive shell in container\n\n\nUseful for interactively exploring a container\nNot suitable for scripting\n\n\n\napptainer run &lt;image&gt; [arguments] – Run the container runscript\n\n\nSimple way to run software in container\nRelies on the way the runscript is specified by the container’s creator\nMay not accept arguments in expected manner\n\n\n\n\napptainer exec &lt;image&gt; &lt;command&gt; – Execute custom command in container\n\n\nMost reliable way to run software in container\nGenerally works as expected\nRecommended for scripting",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-shell-basics",
+    "href": "slides/20241216-slides.html#apptainer-shell-basics",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "apptainer shell – Basics",
+    "text": "apptainer shell – Basics\nEnter interactive shell session in container\n\n\nTerminal\n\napptainer shell samtools_1-21.sif\n\n\nHow to tell you’re in container shell session:\n\nCommand prompt says “Singularity” – Unreliable\necho \"${APPTAINER_NAME}\" prints name of container\n\n\n\nExit interactive shell session and close container\n\n\nApptainer shell\n\nexit\n\nMay also be able to use Ctrl-dCtrl-d",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-shell-software-in-the-samtools-container",
+    "href": "slides/20241216-slides.html#apptainer-shell-software-in-the-samtools-container",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "apptainer shell – Software in the Samtools container",
+    "text": "apptainer shell – Software in the Samtools container\nEnter interactive shell session in container\n\n\nTerminal\n\napptainer shell samtools_1-21.sif\n\n\nSamtools is available inside the container\n\n\nApptainer shell\n\n# show samtools help\nsamtools version\n# show information about the samtools command\ntype samtools\n\n\n\nSoftware available on the ISAAC-NG host OS is not available in the container\n\n\nApptainer shell\n\n# commands that aren't available in the container will fail\napptainer --version\nmodule avail",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-shell-files-in-the-samtools-container",
+    "href": "slides/20241216-slides.html#apptainer-shell-files-in-the-samtools-container",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "apptainer shell – Files in the Samtools container",
+    "text": "apptainer shell – Files in the Samtools container\nDirectly access files in project directory\n\n\nApptainer shell\n\n# print BAM file header\nsamtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nThanks to the ISAAC-NG sys admins, all of your favorite ISAAC-NG directories are accessible inside of containers right where we expect them to be!\n\n\nApptainer shell\n\n# look into your home and scratch directories\nls \"${HOME}\"\nls \"${SCRATCHDIR}\"\n\n# look into the list of project directories\nls /lustre/isaac/proj",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-run-relies-on-runscript",
+    "href": "slides/20241216-slides.html#apptainer-run-relies-on-runscript",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "apptainer run – Relies on runscript",
+    "text": "apptainer run – Relies on runscript\nView runscript built into container – May be hard to parse\n\n\nTerminal\n\n# print the runscript\napptainer inspect --runscript samtools_1-21.sif\n\n\nRun the Samtools container\n\n\nTerminal\n\n# run the samtools container runscript\napptainer run samtools_1-21.sif\n\nRun Samtools in the Samtools container\n\n\nTerminal\n\n# run samtools in the samtools container runscript by supplying command line args\napptainer run samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\n\napptainer run\n\n\nRunning this command is completely dependent on how the runscript is setup",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-exec-execute-samtools-directly-in-container",
+    "href": "slides/20241216-slides.html#apptainer-exec-execute-samtools-directly-in-container",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "apptainer exec – Execute samtools directly in container",
+    "text": "apptainer exec – Execute samtools directly in container\n\n\nTerminal\n\n# print BAM file header with command directly executed in container\napptainer exec samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\napptainer exec\n\n\nRunning this command is completely independent from how the container is setup.\nIf 1) the software is available in the container and 2) the file can be accessed in the container, the command should run.",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#run-apptainer-conclusions-useful-commands",
+    "href": "slides/20241216-slides.html#run-apptainer-conclusions-useful-commands",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Run Apptainer conclusions – Useful commands",
+    "text": "Run Apptainer conclusions – Useful commands\n\nGet Apptainer image from remote URI – apptainer pull\n\n\n\nInteract with Apptainer image with one of three commands\n\nExplore container – apptainer shell\nExecute command inside container – apptainer exec\nRun specific script that you know has been set as runscript – apptainer run",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#run-apptainer-conclusions-software-and-files",
+    "href": "slides/20241216-slides.html#run-apptainer-conclusions-software-and-files",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Run Apptainer conclusions – Software and files",
+    "text": "Run Apptainer conclusions – Software and files\n\nYou shouldn’t need to bind any files into Apptainer containers on ISAAC-NG for normal use\n\nSys admins took care of this for you!\nCaveat: Some (rare) containers may expect files in specific locations. Look into bind paths and mounts\n\n\n\n\nContainers allow you to run the software that is available inside the container\nYou cannot run software available on the host OS inside the container",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#get-quick-alignments-info",
+    "href": "slides/20241216-slides.html#get-quick-alignments-info",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Get quick alignments info",
+    "text": "Get quick alignments info\nCount records in BAM with Samtools – samtools view -c &lt;input.bam&gt;\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nQuick alignment stats – samtools flagstat &lt;input.bam&gt;\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools flagstat data/alignments/wt_antiflag_ip1_rep1.bam",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#get-info-about-high-quality-alignments",
+    "href": "slides/20241216-slides.html#get-info-about-high-quality-alignments",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Get info about high quality alignments",
+    "text": "Get info about high quality alignments\nCount high quality records in BAM – samtools view -c -q 10 &lt;input.bam&gt;\nFilters reads by minimum MAPQ (mapping quality)\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -c -q 10 data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nQuick alignment stats of filtered BAM file – samtools view -h -q 10 &lt;input.bam&gt; | samtools flagstat -\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | samtools flagstat -\n\n\n\n\n\n\n\n\n\n\nPipes in Apptainer\n\n\nApptainer containers work with pipes and redirects. stdout/stdin/stderr goes back and forth between the container and our OS. In the command above, the filtered BAM stream from the container is piped into the samtools command executed on our OS. We don’t have the samtools command available on our OS, so this fails.",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#get-high-quality-alignments-quick-stats",
+    "href": "slides/20241216-slides.html#get-high-quality-alignments-quick-stats",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Get high quality alignments quick stats",
+    "text": "Get high quality alignments quick stats\nPipe out of one container and into another\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | apptainer exec samtools_1-21.sif samtools flagstat -",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#package-bam-analysis-into-a-script",
+    "href": "slides/20241216-slides.html#package-bam-analysis-into-a-script",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Package BAM analysis into a script",
+    "text": "Package BAM analysis into a script\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# pull samtools image if it doesn't already exist\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nif [ ! -e samtools_1-21.sif ]; then\n  apptainer pull samtools_1-21.sif \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools view -h -q 10 \"${input_bam}\" | apptainer exec samtools_1-21.sif samtools flagstat -\n\nRun the BAM stats script\n\n\nTerminal\n\nbash compute_bam_stats.sh data/alignments/wt_antiflag_ip1_rep1.bam",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#script-is-full-of-duplicated-code",
+    "href": "slides/20241216-slides.html#script-is-full-of-duplicated-code",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Script is full of duplicated code",
+    "text": "Script is full of duplicated code\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# pull samtools image if it doesn't already exist\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nif [ ! -e samtools_1-21.sif ]; then\n  apptainer pull samtools_1-21.sif \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools view -h -q 10 \"${input_bam}\" | apptainer exec samtools_1-21.sif samtools flagstat -\n\nNumerous explicit uses of apptainer pull/exec samtools_1-21.sif\n\nDifficult to maintain and error prone – What if we want to update to Samtools v1.22?\nVerbose – Repetition obscures program logic",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#simplify-script-use-variable-for-image-path",
+    "href": "slides/20241216-slides.html#simplify-script-use-variable-for-image-path",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Simplify script – Use variable for image path",
+    "text": "Simplify script – Use variable for image path\nSimple refactor: Replace explicit references to image path with a variable\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# set Samtools remote image URI and local image path\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nsamtools_img_path=\"samtools_1-21.sif\"\n\n# pull samtools image if it doesn't already exist\nif [ ! -e \"${samtools_img_path}\" ]; then\n  apptainer pull \"${samtools_img_path}\" \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec \"${samtools_img_path}\" samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec \"${samtools_img_path}\" samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec \"${samtools_img_path}\" samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec \"${samtools_img_path}\" samtools view -h -q 10 \"${input_bam}\" | apptainer exec \"${samtools_img_path}\" samtools flagstat -",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#execute-container-directly-from-remote-image-uri",
+    "href": "slides/20241216-slides.html#execute-container-directly-from-remote-image-uri",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Execute container directly from remote image URI",
+    "text": "Execute container directly from remote image URI\nCheck apptainer exec docs.\n\n\nTerminal\n\napptainer help exec\n\nMany URI types are listed as valid &lt;container&gt; options. https://* is not among them, but it works.\n\napptainer exec with remote image URI pulls and caches remote image and executes command inside container\n\n\nTerminal\n\n# set variable for Samtools image URI\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n\n# run samtools from the container using its URI\napptainer exec \"${samtools_img_uri}\" samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#simplify-script-execute-from-remote-image-uri",
+    "href": "slides/20241216-slides.html#simplify-script-execute-from-remote-image-uri",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Simplify script – Execute from remote image URI",
+    "text": "Simplify script – Execute from remote image URI\nLarger refactor:\n\nRemove explicit image pull\nExecute from remote image URI instead of local image path\n\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# set Samtools remote image URI\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec \"${samtools_img_uri}\" samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec \"${samtools_img_uri}\" samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec \"${samtools_img_uri}\" samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec \"${samtools_img_uri}\" samtools view -h -q 10 \"${input_bam}\" | apptainer exec \"${samtools_img_uri}\" samtools flagstat -",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#simulate-loading-software-with-function",
+    "href": "slides/20241216-slides.html#simulate-loading-software-with-function",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Simulate “loading” software with function",
+    "text": "Simulate “loading” software with function\nAbstracts away the fact we’re using a container from the main program logic\n\n\nTerminal\n\n# make function to execute Samtools in Apptainer container\nfunction samtools {\n  local img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n  apptainer exec \"${img_uri}\" samtools \"${@}\"\n}\n\n# run samtools from the container using its function\nsamtools view -c data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\n‘Load’ container from function\n\n\nThe abstraction makes this method powerful and expressive, but it introduces some overhead. Since samtools is a function and not an executable file, there will be situations in which it doesn’t behave as running the typical command. There could also be some scenarios where passing arguments to the samtools command in the container through the samtools function doesn’t behave as expected.\nLong story short: beware of edge cases. This abstraction is best for experienced script writers or very straightforward use cases.",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#simplify-script-use-function-to-simulate-loading-software",
+    "href": "slides/20241216-slides.html#simplify-script-use-function-to-simulate-loading-software",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Simplify script – Use function to simulate “loading” software",
+    "text": "Simplify script – Use function to simulate “loading” software\nMost significant refactor: Replace individual apptainer exec commands with calls to samtools function\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# make function to execute Samtools in Apptainer container\nfunction samtools {\n  local img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n  apptainer exec \"${img_uri}\" samtools \"${@}\"\n}\n\n# print alignment stats\necho \"Number records in BAM:\"\nsamtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\nsamtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\nsamtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\nsamtools view -h -q 10 \"${input_bam}\" | samtools flagstat -",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#summarize-abstractions",
+    "href": "slides/20241216-slides.html#summarize-abstractions",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Summarize abstractions",
+    "text": "Summarize abstractions\n\nVariable image path\n\nSimple – makes container usage obvious\nDoesn’t require internet access if local image already exists\nRequires explicit image pull\nMaintain remote image URI and local image path\n\n\n\n\nExecute directly from URI\n\nMaintain only remote image URI\nNo explicit image pull step\nRequires internet access even if image already pulled locally\n\n\n\n\n\n“Load” software with function\n\nMakes program logic easier to see\nMay be some edge cases\nOther users may be unaware container is used",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#what-is-docker",
+    "href": "slides/20241216-slides.html#what-is-docker",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "What is Docker?",
+    "text": "What is Docker?\nAccording to Docker:\n\n“The Industry-Leading Container Runtime”\n“Docker Engine is the industry’s de facto container runtime”\n\n\nUntil recently Docker was nearly synonymous with containerization\nStill immensely popular – Borderline default containerization option\n\n\nTerrible for HPCs – Almost always completely unavailable",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#apptainer-works-with-docker-images-1",
+    "href": "slides/20241216-slides.html#apptainer-works-with-docker-images-1",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Apptainer works with Docker images",
+    "text": "Apptainer works with Docker images\nSimply use the correct URI\nPrepend images on Dockerhub or quay.io with docker:// instead of our usual https://\n\n\nTerminal\n\n# run samtools container from docker image\napptainer exec docker://quay.io/biocontainers/samtools:1.21--h50ea8bc_0 samtools head data/alignments/wt_antiflag_ip1_rep1.bam",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#remote-image-considerations",
+    "href": "slides/20241216-slides.html#remote-image-considerations",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Remote image considerations",
+    "text": "Remote image considerations\nNeed to balance several factors:\n\nReliability & stability – Will the image be there the next time you try to pull it?\nUpdates – Will new images be made available with updated versions of software?\nAccessibility – Is it easy to find and use the images when you need them? Are they reasonably sized?\nSecurity – Does the container do what you need it to do without any weird side effects?",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#remote-image-sources",
+    "href": "slides/20241216-slides.html#remote-image-sources",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Remote image sources",
+    "text": "Remote image sources\n\nOfficial image from software authors/maintainers\n\nUp to date and stable – Only as good as the maintainers\nExample: Google DeepVariant\n\n\n\n\nLarge, community driven resources – Especially for general software\n\nHighly stable\nFrequently updated\nExample: Rocker project for R environment\n\n\n\n\n\nBioContainers container registry\n\nExcellent resource for popular (and many unpopular) bioinformatics programs\nMany versions available and frequently updated\nHighly stable",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#other-image-sources",
+    "href": "slides/20241216-slides.html#other-image-sources",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Other image sources",
+    "text": "Other image sources\n\nPublic repositories, e.g. other people’s images on Docker Hub\n\nLimited reliability\nMinor security concerns\nNo guaranteed updates\nUsually last resort\n\n\n\n\nBuild custom image\n\nApptainer build from definition file\nGives you the power to do almost anything – This is a pro and a con\nOnly as straightforward as installing the software you need to containerize",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#containerized-rstudio-server-on-isaac-ng",
+    "href": "slides/20241216-slides.html#containerized-rstudio-server-on-isaac-ng",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Containerized RStudio server on ISAAC-NG",
+    "text": "Containerized RStudio server on ISAAC-NG\nWhy?\n\nAvoid moving data on and off HPC\nAccess more resources than local computer\nRun long jobs that would be difficult to run locally\n\n\nHow?\n\nUse RStudio server image\nWrite Slurm job submission script\nExpose port we can safely and securely access",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rocker-project-slurm-script",
+    "href": "slides/20241216-slides.html#rocker-project-slurm-script",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Rocker project Slurm script",
+    "text": "Rocker project Slurm script\nUseful links from the Rocker project\n\nRocker RStudio server image\nRocker singularity\n\nIn the next several slides, we’ll build a Slurm job submission script based on the Rocker example script.",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-sbatch-headers",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-sbatch-headers",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – SBATCH headers",
+    "text": "RStudio server Slurm script – SBATCH headers\nSBATCH headers control job submission configurations\n\n\nrstudio_server.sh\n\n#!/bin/bash\n#SBATCH --job-name=rstudio_server\n1#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err\n2#SBATCH --output=/dev/null\n#SBATCH --signal=USR2\n#SBATCH --account=ACF-UTK0011\n#SBATCH --partition=short\n#SBATCH --qos=short\n#SBATCH --cpus-per-task=1\n#SBATCH --mem=4GB\n#SBATCH --time=00-00:15:00\n\n\n1\n\nWe log useful information about how to access our RStudio server session into the stderr file.\n\n2\n\nWe don’t need anything from stdout.",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-tmp-directory",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-tmp-directory",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – tmp directory",
+    "text": "RStudio server Slurm script – tmp directory\nCreate a temporary directory specific to your user session so that your specific temporary files don’t clash those of other users.\n\n\nrstudio_server.sh\n\n# Create temporary directory to be populated with directories to bind-mount in the container\n# where writable file systems are necessary. Adjust path as appropriate for your computing environment.\nworkdir=$(mktemp -d)",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-configure-r-session",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-configure-r-session",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Configure R session",
+    "text": "RStudio server Slurm script – Configure R session\nConfigure R session to use R packages/libraries that won’t conflict with those from another R session and installation you have.\n\n\nrstudio_server.sh\n\n# Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with\n# personal libraries from any R installation in the host environment\ncat &gt; ${workdir}/rsession.sh &lt;&lt;\"END\"\n#!/bin/sh\n1export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2\nmkdir -p \"${R_LIBS_USER}\"\n## custom Rprofile & Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)\n2# export R_PROFILE_USER=/path/to/Rprofile\n# export R_ENVIRON_USER=/path/to/Renviron\nexec /usr/lib/rstudio-server/bin/rsession \"${@}\"\nEND\n\n# make R session script executable and configure it to be bound into the container at runtime\nchmod +x ${workdir}/rsession.sh\nexport SINGULARITY_BIND=\"${workdir}/rsession.sh:/etc/rstudio/rsession.sh\"\n\n\n1\n\nThis uses the \"${HOME}\" directory by default. If you plan to use this for real analyses it’s not a bad idea to set this to use your \"${SCRATCHDIR}\".\n\n2\n\nIf you’re a highly knowledgeable R user, set these variables to have greater control over the profile and environment used in your RStudio session.",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-do-not-suspend-idle-sessions",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-do-not-suspend-idle-sessions",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Do not suspend idle sessions",
+    "text": "RStudio server Slurm script – Do not suspend idle sessions\n\n\nrstudio_server.sh\n\n# Do not suspend idle sessions.\n# Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf\n# https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126\nexport SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT=0",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-authorization",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-authorization",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Authorization",
+    "text": "RStudio server Slurm script – Authorization\nRequire a username and password for additional security\n\n\nrstudio_server.sh\n\n# set user ID and password for RStudio server\n1export SINGULARITYENV_USER=$(whoami)\n2export SINGULARITYENV_PASSWORD=$(openssl rand -base64 15)\n\n\n1\n\nUsername is your ISAAC username.\n\n2\n\nPassword is randomly generated. You can change this to a password of your choosing if desired, but be careful about checking this into version control, especially if it’s one of your usual passwords. I recommend just leaving this as a randomly generated password – we’ll see in a second that the password isn’t that important.",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-get-open-port",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-get-open-port",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Get open port",
+    "text": "RStudio server Slurm script – Get open port\nWe have to have an open port to expose our RStudio server. Since ISAAC is a shared resource, many of the ports will likely be taken, so we have to find and use an available one.\n\n\nrstudio_server.sh\n\n# get unused socket per https://unix.stackexchange.com/a/132524\n# tiny race condition between the python & singularity commands\nreadonly PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind((\"\", 0)); print(s.getsockname()[1]); s.close()')",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-write-session-usage-directions",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-write-session-usage-directions",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Write session usage directions",
+    "text": "RStudio server Slurm script – Write session usage directions\nWrite RStudio server session usage directions to stderr. We will access these in the error file specified in the SBATCH header.\n\n\nrstudio_server.sh\n\n# write session usage information to stderr\ncat 1&gt;&2 &lt;&lt;END\n1. SSH tunnel from your workstation using the following command:\n\n   ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@login.isaac.utk.edu\n\n   and point your web browser to http://localhost:8787\n\n2. log in to RStudio Server using the following credentials:\n\n   user: ${SINGULARITYENV_USER}\n   password: ${SINGULARITYENV_PASSWORD}\n\nWhen done using RStudio Server, terminate the job by:\n\n1. Exit the RStudio Session (\"power\" button in the top right corner of the RStudio window)\n2. Issue the following command on the login node:\n\n      scancel -f ${SLURM_JOB_ID}\nEND",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-launch-rstudio-server",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-launch-rstudio-server",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Launch RStudio server",
+    "text": "RStudio server Slurm script – Launch RStudio server\nHere we actually run the RStudio server command that starts the RStudio server session we will connect to.\n\n\nrstudio_server.sh\n\n# run RStudio Server from apptainer image\nreadonly rstudio_server_img_uri=\"docker://rocker/rstudio:4.4.2\"\napptainer exec \\\n  --cleanenv \\\n  --scratch /run,/tmp,/var/lib/rstudio-server \\\n  --workdir ${workdir} \\\n  \"${rstudio_server_img_uri}\" \\\n  rserver --www-port ${PORT} \\\n  --auth-none=0 \\\n  --auth-pam-helper-path=pam-helper \\\n  --server-user=$(whoami) \\\n  --auth-stay-signed-in-days=30 \\\n  --auth-timeout-minutes=0 \\\n  --rsession-path=/etc/rstudio/rsession.sh\nprintf 'rserver exited' 1&gt;&2",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#rstudio-server-slurm-script-full-script",
+    "href": "slides/20241216-slides.html#rstudio-server-slurm-script-full-script",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "RStudio server Slurm script – Full script",
+    "text": "RStudio server Slurm script – Full script\n\n\nrstudio_server.sh\n\n#!/bin/bash\n#SBATCH --job-name=rstudio_server\n#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err\n#SBATCH --output=/dev/null\n#SBATCH --signal=USR2\n#SBATCH --account=ACF-UTK0011\n#SBATCH --partition=short\n#SBATCH --qos=short\n#SBATCH --cpus-per-task=1\n#SBATCH --mem=4GB\n#SBATCH --time=00-00:15:00\n\n# Create temporary directory to be populated with directories to bind-mount in the container\n# where writable file systems are necessary. Adjust path as appropriate for your computing environment.\nworkdir=$(mktemp -d)\n\n# Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with\n# personal libraries from any R installation in the host environment\ncat &gt; ${workdir}/rsession.sh &lt;&lt;\"END\"\n#!/bin/sh\nexport R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2\nmkdir -p \"${R_LIBS_USER}\"\n## custom Rprofile & Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)\n# export R_PROFILE_USER=/path/to/Rprofile\n# export R_ENVIRON_USER=/path/to/Renviron\nexec /usr/lib/rstudio-server/bin/rsession \"${@}\"\nEND\n\n# make R session script executable and configure it to be bound into the container at runtime\nchmod +x ${workdir}/rsession.sh\nexport SINGULARITY_BIND=\"${workdir}/rsession.sh:/etc/rstudio/rsession.sh\"\n\n# Do not suspend idle sessions.\n# Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf\n# https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126\nexport SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT=0\n\n# set user ID and password for RStudio server\nexport SINGULARITYENV_USER=$(whoami)\nexport SINGULARITYENV_PASSWORD=$(openssl rand -base64 15)\n\n# get unused socket per https://unix.stackexchange.com/a/132524\n# tiny race condition between the python & singularity commands\nreadonly PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind((\"\", 0)); print(s.getsockname()[1]); s.close()')\n\n# write session usage information to stderr\ncat 1&gt;&2 &lt;&lt;END\n1. SSH tunnel from your workstation using the following command:\n\n   ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@login.isaac.utk.edu\n\n   and point your web browser to http://localhost:8787\n\n2. log in to RStudio Server using the following credentials:\n\n   user: ${SINGULARITYENV_USER}\n   password: ${SINGULARITYENV_PASSWORD}\n\nWhen done using RStudio Server, terminate the job by:\n\n1. Exit the RStudio Session (\"power\" button in the top right corner of the RStudio window)\n2. Issue the following command on the login node:\n\n      scancel -f ${SLURM_JOB_ID}\nEND\n\n# run RStudio Server from apptainer image\nreadonly rstudio_server_img_uri=\"docker://rocker/rstudio:4.4.2\"\napptainer exec \\\n  --cleanenv \\\n  --scratch /run,/tmp,/var/lib/rstudio-server \\\n  --workdir ${workdir} \\\n  \"${rstudio_server_img_uri}\" \\\n  rserver --www-port ${PORT} \\\n  --auth-none=0 \\\n  --auth-pam-helper-path=pam-helper \\\n  --server-user=$(whoami) \\\n  --auth-stay-signed-in-days=30 \\\n  --auth-timeout-minutes=0 \\\n  --rsession-path=/etc/rstudio/rsession.sh\nprintf 'rserver exited' 1&gt;&2",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#run-rstudio-server-slurm-job",
+    "href": "slides/20241216-slides.html#run-rstudio-server-slurm-job",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Run RStudio server Slurm job",
+    "text": "Run RStudio server Slurm job\n\nSubmit job to Slurm scheduler\n\n\n\nTerminal\n\nsbatch rstudio_server.sh\n\n\n\nPrint captured usage info from job error file\n\n\n\nTerminal\n\ncat .cache/sbatch_logs/&lt;job ID&gt;_-_rstudio_server.err\n\n\n\n\nOpen a new terminal session on your local machine – NOT ISAAC-NG. Run the ssh command from the error file. Authenticate and leave the SSH session open.\n\n\n\nTerminal\n\nssh -N -L 8787:&lt;host&gt;:&lt;port&gt; &lt;user&gt;@login.isaac.utk.edu\n\n\n\n\nOpen browser window and connect to RStudio server URL: http://localhost:8787/\n\nAuthenticate using the username and password listed in your error file.",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#workshop-goals-how-do-we-feel",
+    "href": "slides/20241216-slides.html#workshop-goals-how-do-we-feel",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "Workshop goals – How do we feel?",
+    "text": "Workshop goals – How do we feel?\n\nLearn to run software on ISAAC-NG using Apptainer containers\nRun CLI software from Apptainer containers\nStrategies to simplify container usage\nRun containers from Docker images on ISAAC-NG\nProvide resources for finding bioinformatics container images\nRun and connect to containerized RStudio server on ISAAC-NG",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20241216-slides.html#when-would-you-use-containers",
+    "href": "slides/20241216-slides.html#when-would-you-use-containers",
+    "title": "Using Containerized Software on HPC for Bioinformatics",
+    "section": "When would you use containers?",
+    "text": "When would you use containers?\n\nTry out new version of software\n\n\nReplace Conda\n\nNo more environment headaches\nNo need to setup channels properly\nNo more accidentally installing software into wrong environment\nNo more version clashes\n\n\n\nShare scripts\n\nIf it works for you, it should work for your collaborators\nIf 1) the software is available in the container and 2) the file can be accessed in the container, the command should run.\n\n\n\nWorkflows/pipelines\n\nContainers + atomized workflow steps are the perfect match",
+    "crumbs": [
+      "2024-12-16 -- Containers Mini Workshop"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#utk-bioinformatics-useful-links",
+    "href": "slides/20250814-hpsc_workshop-slides.html#utk-bioinformatics-useful-links",
+    "title": "HPSC: Using Containers",
+    "section": "UTK bioinformatics useful links",
+    "text": "UTK bioinformatics useful links\n\nUTK Bioinformatics Consulting Services – A collaborative group of genomics and bioinformatics analysts and scientific computing specialists aimed at providing a range of research support and training to faculty, staff, and students.\nUTK Bioinformatics Newsletter – A monthly newsletter about the latest bioinformatics and computational biology research at the University of Tennessee.\nBioinformatics office hours\nHigh Performance & Scientific Computing\nUT Genomics Core",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#workshop-goals",
+    "href": "slides/20250814-hpsc_workshop-slides.html#workshop-goals",
+    "title": "HPSC: Using Containers",
+    "section": "Workshop goals",
+    "text": "Workshop goals\n\nLearn to run software on ISAAC-NG using Apptainer containers\nRun CLI software from Apptainer containers\nStrategies to simplify container usage\nRun containers from Docker images on ISAAC-NG\nProvide resources for finding bioinformatics container images\nRun and connect to containerized RStudio server on ISAAC-NG",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#login-to-isaac-ng",
+    "href": "slides/20250814-hpsc_workshop-slides.html#login-to-isaac-ng",
+    "title": "HPSC: Using Containers",
+    "section": "Login to ISAAC-NG",
+    "text": "Login to ISAAC-NG\nConnect to terminal session on ISAAC-NG login node\nMy preferred: ssh into login.isaac.utk.edu\n\n\nTerminal\n\nssh &lt;netid&gt;@login.isaac.utk.edu\n\nOther options\n\nOpen OnDemand: https://login.isaac.utk.edu -&gt; Files -&gt; Open in Terminal",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#setup-workshop-project-directory",
+    "href": "slides/20250814-hpsc_workshop-slides.html#setup-workshop-project-directory",
+    "title": "HPSC: Using Containers",
+    "section": "Setup workshop project directory",
+    "text": "Setup workshop project directory\n\nCreate project directory in scratch\nNavigate into project directory\n\n\n\nTerminal\n\n# set variable for project directory\nproj_dir=\"${SCRATCHDIR}/hpsc-using-containers\"\n\n# create the project directory and navigate into it\nmkdir -p \"${proj_dir}\"\ncd \"${proj_dir}\"\n\n\n\n\n\n\n\n\nWorkshop project directory\n\n\nAssume that all commands in this mini workshop are run from the top level of this project directory unless explicitly stated otherwise.",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#start-interactive-compute-session",
+    "href": "slides/20250814-hpsc_workshop-slides.html#start-interactive-compute-session",
+    "title": "HPSC: Using Containers",
+    "section": "Start interactive compute session",
+    "text": "Start interactive compute session\nInteractive compute session allows us to work directly on a compute node.\n\n\nTerminal\n\nsrun \\\n  --account ACF-UTK0011 \\\n  --partition short \\\n  --qos short \\\n  --cpus-per-task 1 \\\n  --time 03:00:00 \\\n  --pty \\\n  /bin/bash -i",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#toy-example-description",
+    "href": "slides/20250814-hpsc_workshop-slides.html#toy-example-description",
+    "title": "HPSC: Using Containers",
+    "section": "Toy example description",
+    "text": "Toy example description\n\nPerform routine exploratory analysis of genomic alignments:\n\nHow many alignment records?\nWhat do stats look like?\nCan we tell what reference was used?\n\n\n\n\nData files: Alignments in BAM format with accompanying index\n\n\n\n\nBAMs are great candidate for exploring containerized software:\n\nTypically require specialized software to parse\nCommon format produced and used by many software tools",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#copy-toy-data",
+    "href": "slides/20250814-hpsc_workshop-slides.html#copy-toy-data",
+    "title": "HPSC: Using Containers",
+    "section": "Copy toy data",
+    "text": "Copy toy data\n\nMake you data directory\nCopy toy data files into your directory\n\n\n\nTerminal\n\n# set variable for directory to store alignments in\nalignments_dir=\"data/alignments\"\n# create alignments directory\nmkdir -p \"${alignments_dir}\"\n\n# copy BAM and index\ncp /lustre/isaac24/proj/UTK0411/tfreem10/hpc-containers-crash-course/data/alignments/* \"${alignments_dir}\"",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#get-started-with-apptainer-cli",
+    "href": "slides/20250814-hpsc_workshop-slides.html#get-started-with-apptainer-cli",
+    "title": "HPSC: Using Containers",
+    "section": "Get started with Apptainer CLI",
+    "text": "Get started with Apptainer CLI\nRun Apptainer\n\n\nTerminal\n\napptainer\n\nGet help with Apptainer and subcommands\n\n\nTerminal\n\n# get help with Apptainer\napptainer help\n\n# get help with Apptainer subcommands\napptainer help pull\n# same as -h/--help flag\napptainer pull -h\napptainer pull --help",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#terminology-note-apptainer-is-singularity",
+    "href": "slides/20250814-hpsc_workshop-slides.html#terminology-note-apptainer-is-singularity",
+    "title": "HPSC: Using Containers",
+    "section": "Terminology note: Apptainer is Singularity",
+    "text": "Terminology note: Apptainer is Singularity\nBoth Apptainer and Singularity commands show same version\n\n\nTerminal\n\napptainer --version\nsingularity --version\n\nRunning singularity launches Apptainer\n\n\nTerminal\n\n# find executables for Apptainer and Singularity\nwhich apptainer\nwhich singularity\n\n# show more info about those executables\nls -lh /usr/bin/apptainer /usr/bin/singularity\n\nSingularity Compatibility in Apptainer docs",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#terminology-note-images-and-containers",
+    "href": "slides/20250814-hpsc_workshop-slides.html#terminology-note-images-and-containers",
+    "title": "HPSC: Using Containers",
+    "section": "Terminology Note: Images and Containers",
+    "text": "Terminology Note: Images and Containers\nImages are executable files containing all the components needed to run some software.\nContainers are runtime instances of images.\n\n\n\n\n\n\nImage\n\n\n\n\n\n\nContainer",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#configure-apptainer-cache",
+    "href": "slides/20250814-hpsc_workshop-slides.html#configure-apptainer-cache",
+    "title": "HPSC: Using Containers",
+    "section": "Configure Apptainer cache",
+    "text": "Configure Apptainer cache\n\n\n\n\n\n\n\nApptainer cache\n\n\nApptainer does some image management for us. When it fetches an image from a remote location, it caches those images to prevent repeatedly downloading them. By default, it uses $HOME/.apptainer/cache for its cache directory. Home directories on ISAAC-NG are rather small, and Apptainer images can be large, so it makes sense to store these in scratch.\n\n\n\n\n\nSet Apptainer to cache images in scratch directory\n\n\n~/.bashrc\n\nexport APPTAINER_CACHE=\"${SCRATCHDIR}/.apptainer/cache\"\n\nRestart your shell session to load this environment variable\n\n\nTerminal\n\nexec bash",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#apptainer-pull-get-apptainer-image-from-remote-uri",
+    "href": "slides/20250814-hpsc_workshop-slides.html#apptainer-pull-get-apptainer-image-from-remote-uri",
+    "title": "HPSC: Using Containers",
+    "section": "apptainer pull – Get Apptainer image from remote URI",
+    "text": "apptainer pull – Get Apptainer image from remote URI\nView help docs\n\n\nTerminal\n\napptainer help pull\n\nBasic usage – apptainer pull [output file] &lt;URI&gt;\n\nPull Samtools image – We’ll use Samtools to analyze BAM file\n\n\nTerminal\n\n# set variable for Samtools image URI\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n\n# pull the apptainer image\n1apptainer pull samtools_1-21.sif \"${samtools_img_uri}\"\n\n\n1\n\nIt’s typical to write images to file with .sif extension.",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#ways-to-run-container-from-image",
+    "href": "slides/20250814-hpsc_workshop-slides.html#ways-to-run-container-from-image",
+    "title": "HPSC: Using Containers",
+    "section": "3 ways to run container from image",
+    "text": "3 ways to run container from image\n\napptainer shell &lt;image&gt; – Spawn interactive shell in container\n\n\nUseful for interactively exploring a container\nNot suitable for scripting\n\n\n\napptainer run &lt;image&gt; [arguments] – Run the container runscript\n\n\nSimple way to run software in container\nRelies on the way the runscript is specified by the container’s creator\nMay not accept arguments in expected manner\n\n\n\n\napptainer exec &lt;image&gt; &lt;command&gt; – Execute custom command in container\n\n\nMost reliable way to run software in container\nGenerally works as expected\nRecommended for scripting",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#apptainer-shell-basics",
+    "href": "slides/20250814-hpsc_workshop-slides.html#apptainer-shell-basics",
+    "title": "HPSC: Using Containers",
+    "section": "apptainer shell – Basics",
+    "text": "apptainer shell – Basics\nEnter interactive shell session in container\n\n\nTerminal\n\napptainer shell samtools_1-21.sif\n\n\nHow to tell you’re in container shell session:\n\nCommand prompt says “Singularity” – Unreliable\necho \"${APPTAINER_NAME}\" prints name of container\n\n\n\nExit interactive shell session and close container\n\n\nApptainer shell\n\nexit\n\nMay also be able to use Ctrl-dCtrl-d",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#apptainer-shell-software-in-the-samtools-container",
+    "href": "slides/20250814-hpsc_workshop-slides.html#apptainer-shell-software-in-the-samtools-container",
+    "title": "HPSC: Using Containers",
+    "section": "apptainer shell – Software in the Samtools container",
+    "text": "apptainer shell – Software in the Samtools container\nEnter interactive shell session in container\n\n\nTerminal\n\napptainer shell samtools_1-21.sif\n\n\nSamtools is available inside the container\n\n\nApptainer shell\n\n# show samtools help\nsamtools version\n# show information about the samtools command\ntype samtools\n\n\n\nSoftware available on the ISAAC-NG host OS is not available in the container\n\n\nApptainer shell\n\n# commands that aren't available in the container will fail\napptainer --version\nmodule avail\n\n\n\n\n\n\n\n\nIsolation\n\n\nThis is what we mean we say containers provide isolated environments.",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#apptainer-shell-files-available-in-the-samtools-container",
+    "href": "slides/20250814-hpsc_workshop-slides.html#apptainer-shell-files-available-in-the-samtools-container",
+    "title": "HPSC: Using Containers",
+    "section": "apptainer shell – Files available in the Samtools container",
+    "text": "apptainer shell – Files available in the Samtools container\nDirectly access files in project directory\n\n\nApptainer shell\n\n# print BAM file header\nsamtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nAll of your favorite ISAAC-NG directories are accessible inside of containers right where we expect them to be!\n\n\nApptainer shell\n\n# look into your home and scratch directories\nls \"${HOME}\"\nls \"${SCRATCHDIR}\"\n\n# look into the list of project directories\nls /lustre/isaac24/proj\n\n\n\n\n\n\n\n\n\n\nBind mounts\n\n\nThese directories are mounted when we run the container – they are not part of the image. Bind mounts are set in the configuration or during the container run command. The ISAAC-NG sys admins have configured these directories to be mounted by default. Other systems will have different configurations, and may not be as user friendly by default. Thanks, sys admins!",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#apptainer-run-relies-on-runscript",
+    "href": "slides/20250814-hpsc_workshop-slides.html#apptainer-run-relies-on-runscript",
+    "title": "HPSC: Using Containers",
+    "section": "apptainer run – Relies on runscript",
+    "text": "apptainer run – Relies on runscript\nView runscript built into container – May be hard to parse\n\n\nTerminal\n\n# print the runscript\napptainer inspect --runscript samtools_1-21.sif\n\n\nRun the Samtools container\n\n\nTerminal\n\n# run the samtools container runscript\napptainer run samtools_1-21.sif\n\nRun Samtools in the Samtools container\n\n\nTerminal\n\n# run samtools in the samtools container runscript by supplying command line args\napptainer run samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\n\napptainer run\n\n\nRunning this command is completely dependent on the runscript. Since we have no control over the runscript of a container we did not create, I tend to not recommend relying on apptainer run.",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#apptainer-exec-execute-samtools-directly-in-container",
+    "href": "slides/20250814-hpsc_workshop-slides.html#apptainer-exec-execute-samtools-directly-in-container",
+    "title": "HPSC: Using Containers",
+    "section": "apptainer exec – Execute samtools directly in container",
+    "text": "apptainer exec – Execute samtools directly in container\n\n\nTerminal\n\n# print BAM file header with command directly executed in container\napptainer exec samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\napptainer exec\n\n\nRunning this command is completely independent from how the container is setup.\nIf 1) the software is available in the container and 2) the file can be accessed in the container, the command should run.",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#run-apptainer-conclusions-useful-commands",
+    "href": "slides/20250814-hpsc_workshop-slides.html#run-apptainer-conclusions-useful-commands",
+    "title": "HPSC: Using Containers",
+    "section": "Run Apptainer conclusions – Useful commands",
+    "text": "Run Apptainer conclusions – Useful commands\n\nGet Apptainer image from remote URI – apptainer pull\n\n\n\nInteract with Apptainer image with one of three commands\n\nExplore container – apptainer shell\nExecute command inside container – apptainer exec\nRun specific script that you know has been set as runscript – apptainer run",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#run-apptainer-conclusions-software-and-files",
+    "href": "slides/20250814-hpsc_workshop-slides.html#run-apptainer-conclusions-software-and-files",
+    "title": "HPSC: Using Containers",
+    "section": "Run Apptainer conclusions – Software and files",
+    "text": "Run Apptainer conclusions – Software and files\n\nYou shouldn’t need to bind any files into Apptainer containers on ISAAC-NG for normal use\n\nSys admins took care of this for you!\nCaveat: Some (rare) containers may expect files in specific locations. Look into bind paths and mounts\n\n\n\n\nContainers allow you to run the software that is available inside the container\nYou cannot run software available on the host OS inside the container",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#get-quick-alignments-info",
+    "href": "slides/20250814-hpsc_workshop-slides.html#get-quick-alignments-info",
+    "title": "HPSC: Using Containers",
+    "section": "Get quick alignments info",
+    "text": "Get quick alignments info\nCount records in BAM with Samtools – samtools view -c &lt;input.bam&gt;\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nQuick alignment stats – samtools flagstat &lt;input.bam&gt;\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools flagstat data/alignments/wt_antiflag_ip1_rep1.bam",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#get-info-about-high-quality-alignments",
+    "href": "slides/20250814-hpsc_workshop-slides.html#get-info-about-high-quality-alignments",
+    "title": "HPSC: Using Containers",
+    "section": "Get info about high quality alignments",
+    "text": "Get info about high quality alignments\nCount high quality records in BAM – samtools view -c -q 10 &lt;input.bam&gt;\nFilters reads by minimum MAPQ (mapping quality)\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -c -q 10 data/alignments/wt_antiflag_ip1_rep1.bam\n\n\nQuick alignment stats of filtered BAM file – samtools view -h -q 10 &lt;input.bam&gt; | samtools flagstat -\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | samtools flagstat -\n\n\n\n\n\n\n\n\n\n\nPipes in Apptainer\n\n\nApptainer containers work with pipes and redirects. stdout/stdin/stderr goes back and forth between the container and the host OS. In the command above, the filtered BAM stream from the container is piped into the samtools command executed on the host OS. We don’t have the samtools command available on the host OS, thus the command not found error.",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#get-high-quality-alignments-quick-stats",
+    "href": "slides/20250814-hpsc_workshop-slides.html#get-high-quality-alignments-quick-stats",
+    "title": "HPSC: Using Containers",
+    "section": "Get high quality alignments quick stats",
+    "text": "Get high quality alignments quick stats\nPipe out of one container and into another\n\n\nTerminal\n\napptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | apptainer exec samtools_1-21.sif samtools flagstat -",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#package-bam-analysis-into-a-script",
+    "href": "slides/20250814-hpsc_workshop-slides.html#package-bam-analysis-into-a-script",
+    "title": "HPSC: Using Containers",
+    "section": "Package BAM analysis into a script",
+    "text": "Package BAM analysis into a script\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# pull samtools image if it doesn't already exist\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nif [ ! -e samtools_1-21.sif ]; then\n  apptainer pull samtools_1-21.sif \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools view -h -q 10 \"${input_bam}\" | apptainer exec samtools_1-21.sif samtools flagstat -\n\nRun the BAM stats script\n\n\nTerminal\n\nbash compute_bam_stats.sh data/alignments/wt_antiflag_ip1_rep1.bam",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#script-is-full-of-duplicated-code",
+    "href": "slides/20250814-hpsc_workshop-slides.html#script-is-full-of-duplicated-code",
+    "title": "HPSC: Using Containers",
+    "section": "Script is full of duplicated code",
+    "text": "Script is full of duplicated code\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# pull samtools image if it doesn't already exist\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nif [ ! -e samtools_1-21.sif ]; then\n  apptainer pull samtools_1-21.sif \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec samtools_1-21.sif samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec samtools_1-21.sif samtools view -h -q 10 \"${input_bam}\" | apptainer exec samtools_1-21.sif samtools flagstat -\n\nNumerous explicit uses of apptainer pull/exec samtools_1-21.sif\n\nDifficult to maintain and error prone – What if we want to update to Samtools v1.22?\nVerbose – Repetition obscures program logic",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#simplify-script-use-variable-for-image-path",
+    "href": "slides/20250814-hpsc_workshop-slides.html#simplify-script-use-variable-for-image-path",
+    "title": "HPSC: Using Containers",
+    "section": "Simplify script – Use variable for image path",
+    "text": "Simplify script – Use variable for image path\nSimple refactor: Replace explicit references to image path with a variable\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# set Samtools remote image URI and local image path\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\nsamtools_img_path=\"samtools_1-21.sif\"\n\n# pull samtools image if it doesn't already exist\nif [ ! -e \"${samtools_img_path}\" ]; then\n  apptainer pull \"${samtools_img_path}\" \"${samtools_img_uri}\"\nfi\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec \"${samtools_img_path}\" samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec \"${samtools_img_path}\" samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec \"${samtools_img_path}\" samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec \"${samtools_img_path}\" samtools view -h -q 10 \"${input_bam}\" | apptainer exec \"${samtools_img_path}\" samtools flagstat -",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#execute-container-directly-from-remote-image-uri",
+    "href": "slides/20250814-hpsc_workshop-slides.html#execute-container-directly-from-remote-image-uri",
+    "title": "HPSC: Using Containers",
+    "section": "Execute container directly from remote image URI",
+    "text": "Execute container directly from remote image URI\nCheck apptainer exec docs.\n\n\nTerminal\n\napptainer help exec\n\nMany URI protocols are listed as valid &lt;container&gt; options. https://* is not among them, but it works.\n\napptainer exec with remote image URI pulls and caches remote image and executes command inside container\n\n\nTerminal\n\n# set variable for Samtools image URI\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n\n# run samtools from the container using its URI\napptainer exec \"${samtools_img_uri}\" samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#simplify-script-execute-from-remote-image-uri",
+    "href": "slides/20250814-hpsc_workshop-slides.html#simplify-script-execute-from-remote-image-uri",
+    "title": "HPSC: Using Containers",
+    "section": "Simplify script – Execute from remote image URI",
+    "text": "Simplify script – Execute from remote image URI\nLarger refactor:\n\nRemove explicit image pull\nExecute from remote image URI instead of local image path\n\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# set Samtools remote image URI\nsamtools_img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n\n# print alignment stats\necho \"Number records in BAM:\"\napptainer exec \"${samtools_img_uri}\" samtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\napptainer exec \"${samtools_img_uri}\" samtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\napptainer exec \"${samtools_img_uri}\" samtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\napptainer exec \"${samtools_img_uri}\" samtools view -h -q 10 \"${input_bam}\" | apptainer exec \"${samtools_img_uri}\" samtools flagstat -",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#simulate-loading-software-with-function",
+    "href": "slides/20250814-hpsc_workshop-slides.html#simulate-loading-software-with-function",
+    "title": "HPSC: Using Containers",
+    "section": "Simulate “loading” software with function",
+    "text": "Simulate “loading” software with function\nAbstracts away the fact we’re using a container from the main program logic\n\n\nTerminal\n\n# make function to execute Samtools in Apptainer container\nfunction samtools {\n  local img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n  apptainer exec \"${img_uri}\" samtools \"${@}\"\n}\n\n# run samtools from the container using its function\nsamtools view -c data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\n‘Load’ container from function\n\n\nThe abstraction makes this method powerful and expressive, but it introduces some overhead. Since samtools is a function and not an executable file here, there will be situations in which it doesn’t behave exactly like running the samtools command. There may also be scenarios where passing arguments to the samtools command in the container through the samtools function doesn’t behave as expected.\nLong story short: beware of edge cases. This abstraction is best for experienced shell script writers and very straightforward use cases. Don’t trade working code for pretty code!",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#simplify-script-use-function-to-simulate-loading-software",
+    "href": "slides/20250814-hpsc_workshop-slides.html#simplify-script-use-function-to-simulate-loading-software",
+    "title": "HPSC: Using Containers",
+    "section": "Simplify script – Use function to simulate “loading” software",
+    "text": "Simplify script – Use function to simulate “loading” software\nMost significant refactor: Replace individual apptainer exec commands with calls to samtools function\n\n\ncompute_bam_stats.sh\n\n# get input bam file from command line argument\ninput_bam=\"${1}\"\necho \"Input BAM file: ${input_bam}\"\n\n# make function to execute Samtools in Apptainer container\nfunction samtools {\n  local img_uri=\"https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0\"\n  apptainer exec \"${img_uri}\" samtools \"${@}\"\n}\n\n# print alignment stats\necho \"Number records in BAM:\"\nsamtools view -c \"${input_bam}\"\necho \"BAM quick stats:\"\nsamtools flagstat \"${input_bam}\"\n\n# print alignment stats for high quality alignments\necho \"Number high quality records in BAM:\"\nsamtools view -c -q 10 \"${input_bam}\"\necho \"High quality BAM quick stats:\"\nsamtools view -h -q 10 \"${input_bam}\" | samtools flagstat -",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#summarize-abstractions",
+    "href": "slides/20250814-hpsc_workshop-slides.html#summarize-abstractions",
+    "title": "HPSC: Using Containers",
+    "section": "Summarize abstractions",
+    "text": "Summarize abstractions\n\nImage path as variable\n\nSimple – makes container usage obvious\nDoesn’t require internet access if local image already exists\nRequires explicit image pull\nMaintain remote image URI and local image path\n\n\n\n\nExecute directly from remote URI\n\nMaintain only remote image URI\nNo explicit image pull step\nRequires internet access even if image already pulled locally\n\n\n\n\n\n“Load” software with function\n\nMakes program logic easier to see\nMay be edge cases with unexpected behavior\nOther users may be unaware container is used",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#what-is-docker",
+    "href": "slides/20250814-hpsc_workshop-slides.html#what-is-docker",
+    "title": "HPSC: Using Containers",
+    "section": "What is Docker?",
+    "text": "What is Docker?\nAccording to Docker:\n\n“The Industry-Leading Container Runtime”\n“Docker Engine is the industry’s de facto container runtime”\n\n\nUntil recently Docker was nearly synonymous with containerization\nStill immensely popular – Borderline default containerization option\n\n\nTerrible for HPCs – Almost always completely unavailable",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#apptainer-works-with-docker-images-1",
+    "href": "slides/20250814-hpsc_workshop-slides.html#apptainer-works-with-docker-images-1",
+    "title": "HPSC: Using Containers",
+    "section": "Apptainer works with Docker images",
+    "text": "Apptainer works with Docker images\nSimply use the correct remote URI protocol\nPrepend images on Dockerhub or quay.io with docker:// instead of our usual https://\n\n\nTerminal\n\n# run samtools container from docker image\napptainer exec docker://quay.io/biocontainers/samtools:1.21--h50ea8bc_0 samtools head data/alignments/wt_antiflag_ip1_rep1.bam\n\n\n\n\n\n\n\n\n\nCache Docker images\n\n\nDocker images are also cached by Apptainer. Rerun the command from above and it should run much faster.",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#remote-image-considerations",
+    "href": "slides/20250814-hpsc_workshop-slides.html#remote-image-considerations",
+    "title": "HPSC: Using Containers",
+    "section": "Remote image considerations",
+    "text": "Remote image considerations\nNeed to balance several factors:\n\nReliability & stability – Will the image be there the next time you try to pull it?\nUpdates – Will new images be made available with updated versions of software?\nAccessibility – Is it easy to find and use the images when you need them? Are they reasonably sized?\nSecurity – Does the container do what you need it to do without any weird side effects?",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#remote-image-sources",
+    "href": "slides/20250814-hpsc_workshop-slides.html#remote-image-sources",
+    "title": "HPSC: Using Containers",
+    "section": "Remote image sources",
+    "text": "Remote image sources\n\nOfficial image from software authors/maintainers\n\nUp to date and stable – Only as good as the maintainers\nExample: Google DeepVariant\n\n\n\n\nLarge, community driven resources – Especially for general software\n\nHighly stable\nFrequently updated\nExample: Rocker project for R environment\n\n\n\n\n\nBioContainers container registry\n\nExcellent resource for popular (and many unpopular) bioinformatics programs\nMany versions available and frequently updated\nHighly stable",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#other-image-sources",
+    "href": "slides/20250814-hpsc_workshop-slides.html#other-image-sources",
+    "title": "HPSC: Using Containers",
+    "section": "Other image sources",
+    "text": "Other image sources\n\nPublic repositories, e.g. other people’s images on Docker Hub\n\nLimited reliability\nMinor security concerns\nNo guaranteed updates\nUsually last resort\n\n\n\n\nBuild custom image\n\nApptainer build from definition file\nGives you the power to do almost anything – This is a pro and a con\nOnly as straightforward as installing the software you need to containerize",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#containerized-rstudio-server-on-isaac-ng",
+    "href": "slides/20250814-hpsc_workshop-slides.html#containerized-rstudio-server-on-isaac-ng",
+    "title": "HPSC: Using Containers",
+    "section": "Containerized RStudio server on ISAAC-NG",
+    "text": "Containerized RStudio server on ISAAC-NG\nWhy?\n\nAvoid moving data on and off HPC\nAccess more resources than local computer\nRun long jobs that would be difficult to run locally\n\n\nHow?\n\nUse RStudio server image\nWrite Slurm job submission script\nExpose port we can safely and securely access",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#rocker-project-slurm-script",
+    "href": "slides/20250814-hpsc_workshop-slides.html#rocker-project-slurm-script",
+    "title": "HPSC: Using Containers",
+    "section": "Rocker project Slurm script",
+    "text": "Rocker project Slurm script\nUseful links from the Rocker project\n\nRocker RStudio server image\nRocker singularity\n\nIn the next several slides, we’ll build a Slurm job submission script based on the Rocker example script.",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-sbatch-headers",
+    "href": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-sbatch-headers",
+    "title": "HPSC: Using Containers",
+    "section": "RStudio server Slurm script – SBATCH headers",
+    "text": "RStudio server Slurm script – SBATCH headers\nSBATCH headers control job submission configurations\n\n\nrstudio_server.sh\n\n#!/bin/bash\n#SBATCH --job-name=rstudio_server\n1#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err\n2#SBATCH --output=/dev/null\n#SBATCH --signal=USR2\n#SBATCH --account=ACF-UTK0011\n#SBATCH --partition=short\n#SBATCH --qos=short\n#SBATCH --cpus-per-task=1\n#SBATCH --mem=4GB\n#SBATCH --time=00-00:15:00\n\n\n1\n\nWe log useful information about how to access our RStudio server session into the stderr file.\n\n2\n\nWe don’t need anything from stdout.",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-tmp-directory",
+    "href": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-tmp-directory",
+    "title": "HPSC: Using Containers",
+    "section": "RStudio server Slurm script – tmp directory",
+    "text": "RStudio server Slurm script – tmp directory\nCreate a temporary directory specific to your user session so that your specific temporary files don’t clash those of other users.\n\n\nrstudio_server.sh\n\n# Create temporary directory to be populated with directories to bind-mount in the container\n# where writable file systems are necessary. Adjust path as appropriate for your computing environment.\nworkdir=$(mktemp -d)",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-configure-r-session",
+    "href": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-configure-r-session",
+    "title": "HPSC: Using Containers",
+    "section": "RStudio server Slurm script – Configure R session",
+    "text": "RStudio server Slurm script – Configure R session\nConfigure R session to use R packages/libraries that won’t conflict with those from another R session and installation you have.\n\n\nrstudio_server.sh\n\n# Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with\n# personal libraries from any R installation in the host environment\ncat &gt; ${workdir}/rsession.sh &lt;&lt;\"END\"\n#!/bin/sh\n1export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2\nmkdir -p \"${R_LIBS_USER}\"\n## custom Rprofile & Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)\n2# export R_PROFILE_USER=/path/to/Rprofile\n# export R_ENVIRON_USER=/path/to/Renviron\nexec /usr/lib/rstudio-server/bin/rsession \"${@}\"\nEND\n\n# make R session script executable and configure it to be bound into the container at runtime\nchmod +x ${workdir}/rsession.sh\nexport SINGULARITY_BIND=\"${workdir}/rsession.sh:/etc/rstudio/rsession.sh\"\n\n\n1\n\nThis uses the \"${HOME}\" directory by default. If you plan to use this for real analyses it’s not a bad idea to set this to use your \"${SCRATCHDIR}\".\n\n2\n\nIf you’re a highly knowledgeable R user, set these variables to have greater control over the profile and environment used in your RStudio session.",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-do-not-suspend-idle-sessions",
+    "href": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-do-not-suspend-idle-sessions",
+    "title": "HPSC: Using Containers",
+    "section": "RStudio server Slurm script – Do not suspend idle sessions",
+    "text": "RStudio server Slurm script – Do not suspend idle sessions\n\n\nrstudio_server.sh\n\n# Do not suspend idle sessions.\n# Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf\n# https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126\nexport SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT=0",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-authorization",
+    "href": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-authorization",
+    "title": "HPSC: Using Containers",
+    "section": "RStudio server Slurm script – Authorization",
+    "text": "RStudio server Slurm script – Authorization\nRequire a username and password for additional security\n\n\nrstudio_server.sh\n\n# set user ID and password for RStudio server\n1export SINGULARITYENV_USER=$(whoami)\n2export SINGULARITYENV_PASSWORD=$(openssl rand -base64 15)\n\n\n1\n\nUsername is your ISAAC username.\n\n2\n\nPassword is randomly generated. You can change this to a password of your choosing if desired, but be careful about checking this into version control, especially if it’s one of your usual passwords. I recommend just leaving this as a randomly generated password – we’ll see in a second that the password isn’t that important.",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-get-open-port",
+    "href": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-get-open-port",
+    "title": "HPSC: Using Containers",
+    "section": "RStudio server Slurm script – Get open port",
+    "text": "RStudio server Slurm script – Get open port\nWe have to have an open port to expose our RStudio server. Since ISAAC is a shared resource, many of the ports will likely be taken, so we have to find and use an available one.\n\n\nrstudio_server.sh\n\n# get unused socket per https://unix.stackexchange.com/a/132524\n# tiny race condition between the python & singularity commands\nreadonly PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind((\"\", 0)); print(s.getsockname()[1]); s.close()')",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-write-session-usage-directions",
+    "href": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-write-session-usage-directions",
+    "title": "HPSC: Using Containers",
+    "section": "RStudio server Slurm script – Write session usage directions",
+    "text": "RStudio server Slurm script – Write session usage directions\nWrite RStudio server session usage directions to stderr. We will access these in the error file specified in the SBATCH header.\n\n\nrstudio_server.sh\n\n# write session usage information to stderr\ncat 1&gt;&2 &lt;&lt;END\n1. SSH tunnel from your workstation using the following command:\n\n   ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@login.isaac.utk.edu\n\n   and point your web browser to http://localhost:8787\n\n2. log in to RStudio Server using the following credentials:\n\n   user: ${SINGULARITYENV_USER}\n   password: ${SINGULARITYENV_PASSWORD}\n\nWhen done using RStudio Server, terminate the job by:\n\n1. Exit the RStudio Session (\"power\" button in the top right corner of the RStudio window)\n2. Issue the following command on the login node:\n\n      scancel -f ${SLURM_JOB_ID}\nEND",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-launch-rstudio-server",
+    "href": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-launch-rstudio-server",
+    "title": "HPSC: Using Containers",
+    "section": "RStudio server Slurm script – Launch RStudio server",
+    "text": "RStudio server Slurm script – Launch RStudio server\nHere we actually run the RStudio server command that starts the RStudio server session we will connect to.\n\n\nrstudio_server.sh\n\n# run RStudio Server from apptainer image\nreadonly rstudio_server_img_uri=\"docker://rocker/rstudio:4.4.2\"\napptainer exec \\\n  --cleanenv \\\n  --scratch /run,/tmp,/var/lib/rstudio-server \\\n  --workdir ${workdir} \\\n  \"${rstudio_server_img_uri}\" \\\n  rserver --www-port ${PORT} \\\n  --auth-none=0 \\\n  --auth-pam-helper-path=pam-helper \\\n  --server-user=$(whoami) \\\n  --auth-stay-signed-in-days=30 \\\n  --auth-timeout-minutes=0 \\\n  --rsession-path=/etc/rstudio/rsession.sh\nprintf 'rserver exited' 1&gt;&2",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-full-script",
+    "href": "slides/20250814-hpsc_workshop-slides.html#rstudio-server-slurm-script-full-script",
+    "title": "HPSC: Using Containers",
+    "section": "RStudio server Slurm script – Full script",
+    "text": "RStudio server Slurm script – Full script\n\n\nrstudio_server.sh\n\n#!/bin/bash\n#SBATCH --job-name=rstudio_server\n#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err\n#SBATCH --output=/dev/null\n#SBATCH --signal=USR2\n#SBATCH --account=ACF-UTK0011\n#SBATCH --partition=short\n#SBATCH --qos=short\n#SBATCH --cpus-per-task=1\n#SBATCH --mem=4GB\n#SBATCH --time=00-00:15:00\n\n# Create temporary directory to be populated with directories to bind-mount in the container\n# where writable file systems are necessary. Adjust path as appropriate for your computing environment.\nworkdir=$(mktemp -d)\n\n# Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with\n# personal libraries from any R installation in the host environment\ncat &gt; ${workdir}/rsession.sh &lt;&lt;\"END\"\n#!/bin/sh\nexport R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2\nmkdir -p \"${R_LIBS_USER}\"\n## custom Rprofile & Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)\n# export R_PROFILE_USER=/path/to/Rprofile\n# export R_ENVIRON_USER=/path/to/Renviron\nexec /usr/lib/rstudio-server/bin/rsession \"${@}\"\nEND\n\n# make R session script executable and configure it to be bound into the container at runtime\nchmod +x ${workdir}/rsession.sh\nexport SINGULARITY_BIND=\"${workdir}/rsession.sh:/etc/rstudio/rsession.sh\"\n\n# Do not suspend idle sessions.\n# Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf\n# https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126\nexport SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT=0\n\n# set user ID and password for RStudio server\nexport SINGULARITYENV_USER=$(whoami)\nexport SINGULARITYENV_PASSWORD=$(openssl rand -base64 15)\n\n# get unused socket per https://unix.stackexchange.com/a/132524\n# tiny race condition between the python & singularity commands\nreadonly PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind((\"\", 0)); print(s.getsockname()[1]); s.close()')\n\n# write session usage information to stderr\ncat 1&gt;&2 &lt;&lt;END\n1. SSH tunnel from your workstation using the following command:\n\n   ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@login.isaac.utk.edu\n\n   and point your web browser to http://localhost:8787\n\n2. log in to RStudio Server using the following credentials:\n\n   user: ${SINGULARITYENV_USER}\n   password: ${SINGULARITYENV_PASSWORD}\n\nWhen done using RStudio Server, terminate the job by:\n\n1. Exit the RStudio Session (\"power\" button in the top right corner of the RStudio window)\n2. Issue the following command on the login node:\n\n      scancel -f ${SLURM_JOB_ID}\nEND\n\n# run RStudio Server from apptainer image\nreadonly rstudio_server_img_uri=\"docker://rocker/rstudio:4.4.2\"\napptainer exec \\\n  --cleanenv \\\n  --scratch /run,/tmp,/var/lib/rstudio-server \\\n  --workdir ${workdir} \\\n  \"${rstudio_server_img_uri}\" \\\n  rserver --www-port ${PORT} \\\n  --auth-none=0 \\\n  --auth-pam-helper-path=pam-helper \\\n  --server-user=$(whoami) \\\n  --auth-stay-signed-in-days=30 \\\n  --auth-timeout-minutes=0 \\\n  --rsession-path=/etc/rstudio/rsession.sh\nprintf 'rserver exited' 1&gt;&2",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#run-rstudio-server-slurm-job",
+    "href": "slides/20250814-hpsc_workshop-slides.html#run-rstudio-server-slurm-job",
+    "title": "HPSC: Using Containers",
+    "section": "Run RStudio server Slurm job",
+    "text": "Run RStudio server Slurm job\n\nSubmit job to Slurm scheduler\n\n\n\nTerminal\n\nsbatch rstudio_server.sh\n\n\n\nPrint captured usage info from job error file\n\n\n\nTerminal\n\ncat .cache/sbatch_logs/&lt;job ID&gt;_-_rstudio_server.err\n\nTakes a while to build image file. Watch for changes to file with wait tail -n 20 .cache/sbatch_logs/&lt;job ID&gt;_-_rstudio_server.err\n\n\n\nOpen a new terminal session on your local machine – NOT ISAAC-NG. Run the ssh command from the error file. Authenticate and leave the SSH session open.\n\n\n\nTerminal\n\nssh -N -L 8787:&lt;host&gt;:&lt;port&gt; &lt;user&gt;@login.isaac.utk.edu\n\n\n\n\nOpen browser window and connect to RStudio server URL: http://localhost:8787/\n\nAuthenticate using the username and password listed in your error file.",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#workshop-goals-how-do-we-feel",
+    "href": "slides/20250814-hpsc_workshop-slides.html#workshop-goals-how-do-we-feel",
+    "title": "HPSC: Using Containers",
+    "section": "Workshop goals – How do we feel?",
+    "text": "Workshop goals – How do we feel?\n\nLearn to run software on ISAAC-NG using Apptainer containers\nRun CLI software from Apptainer containers\nStrategies to simplify container usage\nRun containers from Docker images on ISAAC-NG\nProvide resources for finding bioinformatics container images\nRun and connect to containerized RStudio server on ISAAC-NG",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
+  },
+  {
+    "objectID": "slides/20250814-hpsc_workshop-slides.html#when-would-you-use-containers",
+    "href": "slides/20250814-hpsc_workshop-slides.html#when-would-you-use-containers",
+    "title": "HPSC: Using Containers",
+    "section": "When would you use containers?",
+    "text": "When would you use containers?\n\nTry out new version of software\n\n\nReplace Conda\n\nNo more environment headaches\nNo need to setup channels properly\nNo more accidentally installing software into wrong environment\nNo more version clashes\n\n\n\nShare scripts\n\nIf it works for you, it should work for your collaborators\nIf 1) the software is available in the container and 2) the file can be accessed in the container, the command should run.\n\n\n\nWorkflows/pipelines\n\nContainers + atomized workflow steps are the perfect match",
+    "crumbs": [
+      "2025-08-14 -- HPSC: Using Containers"
+    ]
   }
 ]
