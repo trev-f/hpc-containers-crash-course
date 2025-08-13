@@ -7,3 +7,6 @@
 # Don't check rendered documents into version control
 /exploratory/
 /reports/
+
+# Don't check cached files into version control
+/.cache/

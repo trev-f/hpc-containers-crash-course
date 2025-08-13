@@ -1,0 +1,1127 @@
+---
+title: "HPSC: Using Containers"
+date: 2025-08-14
+author: "Trevor F. Freeman"
+institute: "UTIA Genomics Center"
+format: revealjs
+---
+
+# Before we get started
+
+## UTK bioinformatics useful links
+
+* [UTK Bioinformatics Consulting Services](https://bioinfo.utk.edu/) -- A collaborative group of genomics and bioinformatics analysts and scientific computing specialists aimed at providing a range of research support and training to faculty, staff, and students.
+* [UTK Bioinformatics Newsletter](https://tiny.utk.edu/BioinformaticsNewsletter) -- A monthly newsletter about the latest bioinformatics and computational biology research at the University of Tennessee.
+* [Bioinformatics office hours](https://oit.utk.edu/hpsc/bioinformatics-computing-support/)
+* [High Performance & Scientific Computing](https://oit.utk.edu/hpsc/)
+* [UT Genomics Core](https://dna.utk.edu/)
+
+## Workshop goals
+
+* Learn to run software on ISAAC-NG using Apptainer containers
+* Run CLI software from Apptainer containers
+* Strategies to simplify container usage
+* Run containers from Docker images on ISAAC-NG
+* Provide resources for finding bioinformatics container images
+* Run and connect to containerized RStudio server on ISAAC-NG
+
+# Setup workshop environment
+
+## Login to ISAAC-NG
+
+Connect to terminal session on ISAAC-NG login node
+
+My preferred: `ssh` into `login.isaac.utk.edu`
+
+```{.bash filename="Terminal"}
+ssh <netid>@login.isaac.utk.edu
+```
+
+Other options
+
+* Open OnDemand: <https://login.isaac.utk.edu> -> Files -> Open in Terminal
+
+## Setup workshop project directory
+
+1. Create project directory in scratch
+2. Navigate into project directory
+
+```{.bash filename="Terminal"}
+# set variable for project directory
+proj_dir="${SCRATCHDIR}/hpsc-using-containers"
+
+# create the project directory and navigate into it
+mkdir -p "${proj_dir}"
+cd "${proj_dir}"
+```
+
+::: {.callout-note title="Workshop project directory"}
+Assume that all commands in this mini workshop are run from the top level of this project directory unless explicitly stated otherwise.
+:::
+
+## Start interactive compute session
+
+Interactive compute session allows us to work directly on a compute node.
+
+```{.bash filename="Terminal"}
+srun \
+  --account ACF-UTK0011 \
+  --partition short \
+  --qos short \
+  --cpus-per-task 1 \
+  --time 03:00:00 \
+  --pty \
+  /bin/bash -i
+```
+
+# Setup toy example
+
+## Toy example description {.smaller}
+
+* Perform routine exploratory analysis of genomic alignments:
+  * How many alignment records?
+  * What do stats look like?
+  * Can we tell what reference was used?
+
+. . .
+
+* Data files: Alignments in BAM format with accompanying index
+
+. . .
+
+* BAMs are great candidate for exploring containerized software:
+  * Typically require specialized software to parse
+  * Common format produced and used by many software tools
+
+## Fetch toy data {visibility="hidden"}
+
+1. Make data directory
+2. Download toy data files into directory
+
+```{.bash filename="Terminal"}
+# set variable for directory to store alignments in
+alignments_dir="data/alignments"
+# create alignments directory
+mkdir -p "${alignments_dir}"
+
+# download BAM and index
+wget \
+  -P "${alignments_dir}" \
+  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam
+wget \
+  -P "${alignments_dir}" \
+  https://github.com/trev-f/hpc-containers-crash-course/raw/refs/heads/main/data/alignments/wt_antiflag_ip1_rep1.bam.bai
+```
+
+## Copy toy data
+
+1. Make you data directory
+2. Copy toy data files into your directory
+
+```{.bash filename="Terminal"}
+# set variable for directory to store alignments in
+alignments_dir="data/alignments"
+# create alignments directory
+mkdir -p "${alignments_dir}"
+
+# copy BAM and index
+cp /lustre/isaac24/proj/UTK0411/tfreem10/hpc-containers-crash-course/data/alignments/* "${alignments_dir}"
+```
+
+# Run software in Apptainer containers
+
+## Get started with Apptainer CLI
+
+Run Apptainer
+
+```{.bash filename="Terminal"}
+apptainer
+```
+
+Get help with Apptainer and subcommands
+
+```{.bash filename="Terminal"}
+# get help with Apptainer
+apptainer help
+
+# get help with Apptainer subcommands
+apptainer help pull
+# same as -h/--help flag
+apptainer pull -h
+apptainer pull --help
+```
+
+## Terminology note: Apptainer is Singularity
+
+Both Apptainer and Singularity commands show same version
+
+```{.bash filename="Terminal"}
+apptainer --version
+singularity --version
+```
+
+Running `singularity` launches Apptainer
+
+```{.bash filename="Terminal"}
+# find executables for Apptainer and Singularity
+which apptainer
+which singularity
+
+# show more info about those executables
+ls -lh /usr/bin/apptainer /usr/bin/singularity
+```
+
+[Singularity Compatibility](https://apptainer.org/docs/user/1.2/singularity_compatibility.html) in Apptainer docs
+
+## Terminology Note: Images and Containers {.smaller}
+
+Images are executable files containing all the components needed to run some software.
+
+Containers are runtime instances of images.
+
+. . .
+
+:::: {.columns}
+
+::: {.column width="50%"}
+![Image](images/blueprint.jpeg)
+:::
+
+::: {.column width="50%"}
+![Container](images/house.jpg)
+:::
+
+::::
+
+## Configure Apptainer cache
+
+::: {.callout-important title="Apptainer cache"}
+Apptainer does some image management for us.
+When it fetches an image from a remote location, it caches those images to prevent repeatedly downloading them.
+By default, it uses `$HOME/.apptainer/cache` for its cache directory.
+Home directories on ISAAC-NG are rather small, and Apptainer images can be large, so it makes sense to store these in scratch.
+:::
+
+. . .
+
+Set Apptainer to cache images in scratch directory
+
+```{.bash filename="~/.bashrc"}
+export APPTAINER_CACHE="${SCRATCHDIR}/.apptainer/cache"
+```
+
+Restart your shell session to load this environment variable
+
+```{.bash filename="Terminal"}
+exec bash
+```
+
+## `apptainer pull` -- Get Apptainer image from remote URI
+
+View help docs
+
+```{.bash filename="Terminal"}
+apptainer help pull
+```
+
+Basic usage -- `apptainer pull [output file] <URI>`
+
+. . .
+
+Pull Samtools image -- We'll use Samtools to analyze BAM file
+
+```{.bash filename="Terminal"}
+# set variable for Samtools image URI
+samtools_img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+
+# pull the apptainer image
+apptainer pull samtools_1-21.sif "${samtools_img_uri}"    # <1>
+```
+
+1. It's typical to write images to file with `.sif` extension.
+
+## 3 ways to run container from image {.smaller}
+
+1. `apptainer shell <image>` -- Spawn interactive shell in container
+  * Useful for interactively exploring a container
+  * Not suitable for scripting
+
+. . .
+
+2. `apptainer run <image> [arguments]` -- Run the container runscript
+  * Simple way to run software in container
+  * Relies on the way the runscript is specified by the container's creator
+  * May not accept arguments in expected manner
+
+. . .
+
+3. `apptainer exec <image> <command>` -- Execute custom command in container
+  * Most reliable way to run software in container
+  * Generally works as expected
+  * Recommended for scripting
+
+## `apptainer shell` -- Basics {.smaller}
+
+Enter interactive shell session in container
+
+```{.bash filename="Terminal"}
+apptainer shell samtools_1-21.sif
+```
+
+. . .
+
+How to tell you're in container shell session:
+
+1. Command prompt says "Singularity" -- Unreliable
+2. `echo "${APPTAINER_NAME}"` prints name of container
+
+. . .
+
+Exit interactive shell session and close container
+
+```{.bash filename="Apptainer shell"}
+exit
+```
+
+May also be able to use {{< kbd Ctrl-d >}}
+
+## `apptainer shell` -- Software in the Samtools container {.smaller}
+
+Enter interactive shell session in container
+
+```{.bash filename="Terminal"}
+apptainer shell samtools_1-21.sif
+```
+
+. . .
+
+Samtools is available inside the container
+
+```{.bash filename="Apptainer shell"}
+# show samtools help
+samtools version
+# show information about the samtools command
+type samtools
+```
+
+. . .
+
+Software available on the ISAAC-NG host OS is not available in the container
+
+```{.bash filename="Apptainer shell"}
+# commands that aren't available in the container will fail
+apptainer --version
+module avail
+```
+
+::: {.callout-note title="Isolation"}
+This is what we mean we say containers provide isolated environments.
+:::
+
+## `apptainer shell` -- Files available in the Samtools container {.smaller}
+
+Directly access files in project directory
+
+```{.bash filename="Apptainer shell"}
+# print BAM file header
+samtools head data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+. . .
+
+All of your favorite ISAAC-NG directories are accessible inside of containers right where we expect them to be!
+
+```{.bash filename="Apptainer shell"}
+# look into your home and scratch directories
+ls "${HOME}"
+ls "${SCRATCHDIR}"
+
+# look into the list of project directories
+ls /lustre/isaac24/proj
+```
+
+. . .
+
+::: {.callout-important title="Bind mounts"}
+These directories are mounted when we run the container -- they are not part of the image.
+Bind mounts are set in the configuration or during the container run command.
+The ISAAC-NG sys admins have configured these directories to be mounted by default.
+Other systems will have different configurations, and may not be as user friendly by default.
+Thanks, sys admins!
+:::
+
+## `apptainer run` -- Relies on runscript {.smaller}
+
+View runscript built into container -- May be hard to parse
+
+```{.bash filename="Terminal"}
+# print the runscript
+apptainer inspect --runscript samtools_1-21.sif
+```
+
+. . .
+
+Run the Samtools container
+
+```{.bash filename="Terminal"}
+# run the samtools container runscript
+apptainer run samtools_1-21.sif
+```
+
+Run Samtools in the Samtools container
+
+```{.bash filename="Terminal"}
+# run samtools in the samtools container runscript by supplying command line args
+apptainer run samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+. . .
+
+::: {.callout-important title="`apptainer run`"}
+Running this command is completely dependent on the runscript.
+Since we have no control over the runscript of a container we did not create, I tend to not recommend relying on `apptainer run`.
+:::
+
+## `apptainer exec` -- Execute samtools directly in container
+
+```{.bash filename="Terminal"}
+# print BAM file header with command directly executed in container
+apptainer exec samtools_1-21.sif samtools head data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+. . .
+
+::: {.callout-note title="apptainer exec"}
+Running this command is completely independent from how the container is setup.
+
+If 1) the software is available in the container and 2) the file can be accessed in the container, the command should run.
+:::
+
+## Run Apptainer conclusions -- Useful commands
+
+* Get Apptainer image from remote URI -- `apptainer pull`
+
+. . .
+
+* Interact with Apptainer image with one of three commands
+  * Explore container -- `apptainer shell`
+  * Execute command inside container -- `apptainer exec`
+  * Run specific script that you know has been set as runscript -- `apptainer run`
+
+## Run Apptainer conclusions -- Software and files
+
+* You shouldn't need to bind any files into Apptainer containers on ISAAC-NG for normal use
+  * Sys admins took care of this for you!
+  * Caveat: Some (rare) containers may expect files in specific locations. Look into [bind paths and mounts](https://apptainer.org/docs/user/1.2/bind_paths_and_mounts.html)
+
+. . .
+
+* Containers allow you to run the software that is available inside the container
+* You cannot run software available on the host OS inside the container
+
+# Apptainer containers in use -- Analyze the toy example
+
+## Get quick alignments info
+
+Count records in BAM with Samtools -- `samtools view -c <input.bam>`
+
+```{.bash filename="Terminal"}
+apptainer exec samtools_1-21.sif samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+. . .
+
+Quick alignment stats -- `samtools flagstat <input.bam>`
+
+```{.bash filename="Terminal"}
+apptainer exec samtools_1-21.sif samtools flagstat data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+## Get info about high quality alignments {.smaller}
+
+Count high quality records in BAM -- `samtools view -c -q 10 <input.bam>`
+
+Filters reads by minimum MAPQ (mapping quality)
+
+```{.bash filename="Terminal"}
+apptainer exec samtools_1-21.sif samtools view -c -q 10 data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+. . .
+
+Quick alignment stats of filtered BAM file -- `samtools view -h -q 10 <input.bam> | samtools flagstat -`
+
+```{.bash filename="Terminal"}
+apptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | samtools flagstat -
+```
+
+. . .
+
+::: {.callout-important title="Pipes in Apptainer"}
+Apptainer containers work with pipes and redirects.
+`stdout`/`stdin`/`stderr` goes back and forth between the container and the host OS.
+In the command above, the filtered BAM stream from the container is piped into the `samtools` command executed on *the host OS*.
+We don't have the `samtools` command available on the host OS, thus the `command not found` error.
+:::
+
+## Get high quality alignments quick stats
+
+Pipe out of one container and into another
+
+```{.bash filename="Terminal"}
+apptainer exec samtools_1-21.sif samtools view -q 10 -h data/alignments/wt_antiflag_ip1_rep1.bam | apptainer exec samtools_1-21.sif samtools flagstat -
+```
+
+## Package BAM analysis into a script {.smaller}
+
+```{.bash filename="compute_bam_stats.sh"}
+# get input bam file from command line argument
+input_bam="${1}"
+echo "Input BAM file: ${input_bam}"
+
+# pull samtools image if it doesn't already exist
+samtools_img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+if [ ! -e samtools_1-21.sif ]; then
+  apptainer pull samtools_1-21.sif "${samtools_img_uri}"
+fi
+
+# print alignment stats
+echo "Number records in BAM:"
+apptainer exec samtools_1-21.sif samtools view -c "${input_bam}"
+echo "BAM quick stats:"
+apptainer exec samtools_1-21.sif samtools flagstat "${input_bam}"
+
+# print alignment stats for high quality alignments
+echo "Number high quality records in BAM:"
+apptainer exec samtools_1-21.sif samtools view -c -q 10 "${input_bam}"
+echo "High quality BAM quick stats:"
+apptainer exec samtools_1-21.sif samtools view -h -q 10 "${input_bam}" | apptainer exec samtools_1-21.sif samtools flagstat -
+```
+
+Run the BAM stats script
+
+```{.bash filename="Terminal"}
+bash compute_bam_stats.sh data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+# Simplify Apptainer usage
+
+Abstract away details to simplify maintenance and understanding of the script.
+
+## Script is full of duplicated code {.smaller}
+
+```{.bash filename="compute_bam_stats.sh"}
+# get input bam file from command line argument
+input_bam="${1}"
+echo "Input BAM file: ${input_bam}"
+
+# pull samtools image if it doesn't already exist
+samtools_img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+if [ ! -e samtools_1-21.sif ]; then
+  apptainer pull samtools_1-21.sif "${samtools_img_uri}"
+fi
+
+# print alignment stats
+echo "Number records in BAM:"
+apptainer exec samtools_1-21.sif samtools view -c "${input_bam}"
+echo "BAM quick stats:"
+apptainer exec samtools_1-21.sif samtools flagstat "${input_bam}"
+
+# print alignment stats for high quality alignments
+echo "Number high quality records in BAM:"
+apptainer exec samtools_1-21.sif samtools view -c -q 10 "${input_bam}"
+echo "High quality BAM quick stats:"
+apptainer exec samtools_1-21.sif samtools view -h -q 10 "${input_bam}" | apptainer exec samtools_1-21.sif samtools flagstat -
+```
+
+Numerous explicit uses of `apptainer pull/exec samtools_1-21.sif`
+
+* Difficult to maintain and error prone -- What if we want to update to Samtools v1.22?
+* Verbose -- Repetition obscures program logic
+
+## Simplify script -- Use variable for image path {.smaller}
+
+Simple refactor: Replace explicit references to image path with a variable
+
+```{.bash filename="compute_bam_stats.sh"}
+# get input bam file from command line argument
+input_bam="${1}"
+echo "Input BAM file: ${input_bam}"
+
+# set Samtools remote image URI and local image path
+samtools_img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+samtools_img_path="samtools_1-21.sif"
+
+# pull samtools image if it doesn't already exist
+if [ ! -e "${samtools_img_path}" ]; then
+  apptainer pull "${samtools_img_path}" "${samtools_img_uri}"
+fi
+
+# print alignment stats
+echo "Number records in BAM:"
+apptainer exec "${samtools_img_path}" samtools view -c "${input_bam}"
+echo "BAM quick stats:"
+apptainer exec "${samtools_img_path}" samtools flagstat "${input_bam}"
+
+# print alignment stats for high quality alignments
+echo "Number high quality records in BAM:"
+apptainer exec "${samtools_img_path}" samtools view -c -q 10 "${input_bam}"
+echo "High quality BAM quick stats:"
+apptainer exec "${samtools_img_path}" samtools view -h -q 10 "${input_bam}" | apptainer exec "${samtools_img_path}" samtools flagstat -
+```
+
+## Execute container directly from remote image URI
+
+Check `apptainer exec` docs.
+
+```{.bash filename="Terminal"}
+apptainer help exec
+```
+
+Many URI protocols are listed as valid `<container>` options.
+`https://*` is not among them, but it works.
+
+. . .
+
+`apptainer exec` with remote image URI pulls and caches remote image and executes command inside container
+
+```{.bash filename="Terminal"}
+# set variable for Samtools image URI
+samtools_img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+
+# run samtools from the container using its URI
+apptainer exec "${samtools_img_uri}" samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+## Simplify script -- Execute from remote image URI {.smaller}
+
+Larger refactor:
+
+1. Remove explicit image pull
+2. Execute from remote image URI instead of local image path
+
+```{.bash filename="compute_bam_stats.sh"}
+# get input bam file from command line argument
+input_bam="${1}"
+echo "Input BAM file: ${input_bam}"
+
+# set Samtools remote image URI
+samtools_img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+
+# print alignment stats
+echo "Number records in BAM:"
+apptainer exec "${samtools_img_uri}" samtools view -c "${input_bam}"
+echo "BAM quick stats:"
+apptainer exec "${samtools_img_uri}" samtools flagstat "${input_bam}"
+
+# print alignment stats for high quality alignments
+echo "Number high quality records in BAM:"
+apptainer exec "${samtools_img_uri}" samtools view -c -q 10 "${input_bam}"
+echo "High quality BAM quick stats:"
+apptainer exec "${samtools_img_uri}" samtools view -h -q 10 "${input_bam}" | apptainer exec "${samtools_img_uri}" samtools flagstat -
+```
+
+## Simulate "loading" software with function {.smaller}
+
+Abstracts away the fact we're using a container from the main program logic
+
+```{.bash filename="Terminal"}
+# make function to execute Samtools in Apptainer container
+function samtools {
+  local img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+  apptainer exec "${img_uri}" samtools "${@}"
+}
+
+# run samtools from the container using its function
+samtools view -c data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+. . .
+
+::: {.callout-caution title="'Load' container from function"}
+The abstraction makes this method powerful and expressive, but it introduces some overhead.
+Since `samtools` is a function and not an executable file here, there will be situations in which it doesn't behave exactly like running the `samtools` command.
+There may also be scenarios where passing arguments to the `samtools` command in the container through the `samtools` function doesn't behave as expected.
+
+Long story short: beware of edge cases.
+This abstraction is best for experienced shell script writers and very straightforward use cases.
+Don't trade working code for pretty code!
+:::
+
+## Simplify script -- Use function to simulate "loading" software {.smaller}
+
+Most significant refactor: Replace individual `apptainer exec` commands with calls to `samtools` function
+
+```{.bash filename="compute_bam_stats.sh"}
+# get input bam file from command line argument
+input_bam="${1}"
+echo "Input BAM file: ${input_bam}"
+
+# make function to execute Samtools in Apptainer container
+function samtools {
+  local img_uri="https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0"
+  apptainer exec "${img_uri}" samtools "${@}"
+}
+
+# print alignment stats
+echo "Number records in BAM:"
+samtools view -c "${input_bam}"
+echo "BAM quick stats:"
+samtools flagstat "${input_bam}"
+
+# print alignment stats for high quality alignments
+echo "Number high quality records in BAM:"
+samtools view -c -q 10 "${input_bam}"
+echo "High quality BAM quick stats:"
+samtools view -h -q 10 "${input_bam}" | samtools flagstat -
+```
+
+## Summarize abstractions {.smaller}
+
+* Image path as variable
+  * Simple -- makes container usage obvious
+  * Doesn't require internet access if local image already exists
+  * Requires explicit image pull
+  * Maintain remote image URI and local image path
+
+. . .
+
+* Execute directly from remote URI
+  * Maintain only remote image URI
+  * No explicit image pull step
+  * Requires internet access even if image already pulled locally
+
+. . .
+
+* "Load" software with function
+  * Makes program logic easier to see
+  * May be edge cases with unexpected behavior
+  * Other users may be unaware container is used
+
+# Run Docker images with Apptainer
+
+## What is Docker?
+
+According to Docker:
+
+* "The Industry-Leading Container Runtime"
+* "Docker Engine is the industry’s de facto container runtime"
+
+. . .
+
+Until recently Docker was nearly synonymous with containerization
+
+Still immensely popular -- Borderline default containerization option
+
+. . .
+
+Terrible for HPCs -- Almost always completely unavailable
+
+## Apptainer works with Docker images {visibility="hidden"}
+
+```{mermaid}
+flowchart LR
+    remote_image["Remote image"]
+    local_image["Local image"]
+
+    remote_image -- pull --> local_image
+
+    interact["Interact w/\ncontainer"]
+
+    local_image -- shell\nrun\nexec --> interact
+```
+
+## Apptainer works with Docker images
+
+Simply use the correct remote URI protocol
+
+Prepend images on Dockerhub or quay.io with `docker://` instead of our usual `https://`
+
+```{.bash filename="Terminal"}
+# run samtools container from docker image
+apptainer exec docker://quay.io/biocontainers/samtools:1.21--h50ea8bc_0 samtools head data/alignments/wt_antiflag_ip1_rep1.bam
+```
+
+. . .
+
+::: {.callout-note title="Cache Docker images"}
+Docker images are also cached by Apptainer.
+Rerun the command from above and it should run much faster.
+:::
+
+# Where to find remote images
+
+## Remote image considerations
+
+Need to balance several factors:
+
+* Reliability & stability -- Will the image be there the next time you try to pull it?
+* Updates -- Will new images be made available with updated versions of software?
+* Accessibility -- Is it easy to find and use the images when you need them? Are they reasonably sized?
+* Security -- Does the container do what you need it to do without any weird side effects?
+    
+
+## Remote image sources {.smaller}
+
+1. Official image from software authors/maintainers
+
+    * Up to date and stable -- Only as good as the maintainers
+    * Example: [Google DeepVariant](https://github.com/google/deepvariant/blob/r1.4/docs/deepvariant-quick-start.md#get-docker-image-models-and-test-datas)
+
+. . .
+
+2. Large, community driven resources -- Especially for general software
+
+    * Highly stable
+    * Frequently updated
+    * Example: [Rocker project](https://rocker-project.org/) for R environment
+    
+. . .
+
+3. [BioContainers](https://biocontainers.pro/) container registry
+
+    * Excellent resource for popular (and many unpopular) bioinformatics programs
+    * Many versions available and frequently updated
+    * Highly stable
+    
+## Other image sources {.smaller}
+
+* Public repositories, e.g. other people's images on [Docker Hub](https://hub.docker.com/)
+
+    * Limited reliability
+    * Minor security concerns
+    * No guaranteed updates
+    * Usually last resort
+
+. . .
+
+* Build custom image
+
+    * [Apptainer build](https://apptainer.org/docs/user/1.2/build_a_container.html) from [definition file](https://apptainer.org/docs/user/1.2/definition_files.html)
+    * Gives you the power to do almost anything -- This is a pro and a con
+    * Only as straightforward as installing the software you need to containerize
+    
+# Advanced container usage: Run RStudio server on ISAAC-NG
+
+## Containerized RStudio server on ISAAC-NG
+
+Why?
+
+* Avoid moving data on and off HPC
+* Access more resources than local computer
+* Run long jobs that would be difficult to run locally
+    
+. . .
+
+How?
+
+* Use RStudio server image
+* Write Slurm job submission script
+* Expose port we can safely and securely access
+
+## Rocker project Slurm script
+
+Useful links from the Rocker project
+
+* [Rocker RStudio server image](https://rocker-project.org/use/singularity.html#importing-a-rocker-image)
+
+* [Rocker singularity](https://rocker-project.org/use/singularity.html#slurm-job-script)
+
+In the next several slides, we'll build a Slurm job submission script based on the Rocker example script.
+
+## RStudio server Slurm script -- SBATCH headers {.smaller}
+
+SBATCH headers control job submission configurations
+
+```{.bash filename="rstudio_server.sh"}
+#!/bin/bash
+#SBATCH --job-name=rstudio_server
+#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err   # <1>
+#SBATCH --output=/dev/null                       # <2>
+#SBATCH --signal=USR2
+#SBATCH --account=ACF-UTK0011
+#SBATCH --partition=short
+#SBATCH --qos=short
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=4GB
+#SBATCH --time=00-00:15:00
+```
+1. We log useful information about how to access our RStudio server session into the stderr file.
+2. We don't need anything from stdout.
+
+## RStudio server Slurm script -- tmp directory {.smaller}
+
+Create a temporary directory specific to your user session so that your specific temporary files don't clash those of other users.
+
+```{.bash filename="rstudio_server.sh"}
+# Create temporary directory to be populated with directories to bind-mount in the container
+# where writable file systems are necessary. Adjust path as appropriate for your computing environment.
+workdir=$(mktemp -d)
+```
+
+## RStudio server Slurm script -- Configure R session {.smaller}
+
+Configure R session to use R packages/libraries that won't conflict with those from another R session and installation you have.
+
+```{.bash filename="rstudio_server.sh"}
+# Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with
+# personal libraries from any R installation in the host environment
+cat > ${workdir}/rsession.sh <<"END"
+#!/bin/sh
+export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2    # <1>
+mkdir -p "${R_LIBS_USER}"
+## custom Rprofile & Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)
+# export R_PROFILE_USER=/path/to/Rprofile    # <2>
+# export R_ENVIRON_USER=/path/to/Renviron    # <2>
+exec /usr/lib/rstudio-server/bin/rsession "${@}"
+END
+
+# make R session script executable and configure it to be bound into the container at runtime
+chmod +x ${workdir}/rsession.sh
+export SINGULARITY_BIND="${workdir}/rsession.sh:/etc/rstudio/rsession.sh"
+```
+1. This uses the `"${HOME}"` directory by default. If you plan to use this for real analyses it's not a bad idea to set this to use your `"${SCRATCHDIR}"`.
+2. If you're a highly knowledgeable R user, set these variables to have greater control over the profile and environment used in your RStudio session.
+
+## RStudio server Slurm script -- Do not suspend idle sessions {.smaller}
+
+```{.bash filename="rstudio_server.sh"}
+# Do not suspend idle sessions.
+# Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf
+# https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126
+export SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT=0
+```
+
+## RStudio server Slurm script -- Authorization {.smaller}
+
+Require a username and password for additional security
+
+```{.bash filename="rstudio_server.sh"}
+# set user ID and password for RStudio server
+export SINGULARITYENV_USER=$(whoami)    # <1>
+export SINGULARITYENV_PASSWORD=$(openssl rand -base64 15)    # <2>
+```
+1. Username is your ISAAC username.
+2. Password is randomly generated. You can change this to a password of your choosing if desired, but be careful about checking this into version control, especially if it's one of your usual passwords. I recommend just leaving this as a randomly generated password -- we'll see in a second that the password isn't that important.
+
+## RStudio server Slurm script -- Get open port {.smaller}
+
+We have to have an open port to expose our RStudio server.
+Since ISAAC is a shared resource, many of the ports will likely be taken, so we have to find and use an available one.
+
+```{.bash filename="rstudio_server.sh"}
+# get unused socket per https://unix.stackexchange.com/a/132524
+# tiny race condition between the python & singularity commands
+readonly PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()')
+```
+
+## RStudio server Slurm script -- Write session usage directions {.smaller}
+
+Write RStudio server session usage directions to stderr.
+We will access these in the `error` file specified in the SBATCH header.
+
+```{.bash filename="rstudio_server.sh"}
+# write session usage information to stderr
+cat 1>&2 <<END
+1. SSH tunnel from your workstation using the following command:
+
+   ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@login.isaac.utk.edu
+
+   and point your web browser to http://localhost:8787
+
+2. log in to RStudio Server using the following credentials:
+
+   user: ${SINGULARITYENV_USER}
+   password: ${SINGULARITYENV_PASSWORD}
+
+When done using RStudio Server, terminate the job by:
+
+1. Exit the RStudio Session ("power" button in the top right corner of the RStudio window)
+2. Issue the following command on the login node:
+
+      scancel -f ${SLURM_JOB_ID}
+END
+```
+
+## RStudio server Slurm script -- Launch RStudio server {.smaller}
+
+Here we actually run the RStudio server command that starts the RStudio server session we will connect to.
+
+```{.bash filename="rstudio_server.sh"}
+# run RStudio Server from apptainer image
+readonly rstudio_server_img_uri="docker://rocker/rstudio:4.4.2"
+apptainer exec \
+  --cleanenv \
+  --scratch /run,/tmp,/var/lib/rstudio-server \
+  --workdir ${workdir} \
+  "${rstudio_server_img_uri}" \
+  rserver --www-port ${PORT} \
+  --auth-none=0 \
+  --auth-pam-helper-path=pam-helper \
+  --server-user=$(whoami) \
+  --auth-stay-signed-in-days=30 \
+  --auth-timeout-minutes=0 \
+  --rsession-path=/etc/rstudio/rsession.sh
+printf 'rserver exited' 1>&2
+```
+
+## RStudio server Slurm script -- Full script {.smaller .scrollable}
+
+```{.bash filename="rstudio_server.sh"}
+#!/bin/bash
+#SBATCH --job-name=rstudio_server
+#SBATCH --error=.cache/sbatch_logs/%j_-_%x.err
+#SBATCH --output=/dev/null
+#SBATCH --signal=USR2
+#SBATCH --account=ACF-UTK0011
+#SBATCH --partition=short
+#SBATCH --qos=short
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=4GB
+#SBATCH --time=00-00:15:00
+
+# Create temporary directory to be populated with directories to bind-mount in the container
+# where writable file systems are necessary. Adjust path as appropriate for your computing environment.
+workdir=$(mktemp -d)
+
+# Set R_LIBS_USER to an existing path specific to rocker/rstudio to avoid conflicts with
+# personal libraries from any R installation in the host environment
+cat > ${workdir}/rsession.sh <<"END"
+#!/bin/sh
+export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.4.2
+mkdir -p "${R_LIBS_USER}"
+## custom Rprofile & Renviron (default is $HOME/.Rprofile and $HOME/.Renviron)
+# export R_PROFILE_USER=/path/to/Rprofile
+# export R_ENVIRON_USER=/path/to/Renviron
+exec /usr/lib/rstudio-server/bin/rsession "${@}"
+END
+
+# make R session script executable and configure it to be bound into the container at runtime
+chmod +x ${workdir}/rsession.sh
+export SINGULARITY_BIND="${workdir}/rsession.sh:/etc/rstudio/rsession.sh"
+
+# Do not suspend idle sessions.
+# Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf
+# https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126
+export SINGULARITYENV_RSTUDIO_SESSION_TIMEOUT=0
+
+# set user ID and password for RStudio server
+export SINGULARITYENV_USER=$(whoami)
+export SINGULARITYENV_PASSWORD=$(openssl rand -base64 15)
+
+# get unused socket per https://unix.stackexchange.com/a/132524
+# tiny race condition between the python & singularity commands
+readonly PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()')
+
+# write session usage information to stderr
+cat 1>&2 <<END
+1. SSH tunnel from your workstation using the following command:
+
+   ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@login.isaac.utk.edu
+
+   and point your web browser to http://localhost:8787
+
+2. log in to RStudio Server using the following credentials:
+
+   user: ${SINGULARITYENV_USER}
+   password: ${SINGULARITYENV_PASSWORD}
+
+When done using RStudio Server, terminate the job by:
+
+1. Exit the RStudio Session ("power" button in the top right corner of the RStudio window)
+2. Issue the following command on the login node:
+
+      scancel -f ${SLURM_JOB_ID}
+END
+
+# run RStudio Server from apptainer image
+readonly rstudio_server_img_uri="docker://rocker/rstudio:4.4.2"
+apptainer exec \
+  --cleanenv \
+  --scratch /run,/tmp,/var/lib/rstudio-server \
+  --workdir ${workdir} \
+  "${rstudio_server_img_uri}" \
+  rserver --www-port ${PORT} \
+  --auth-none=0 \
+  --auth-pam-helper-path=pam-helper \
+  --server-user=$(whoami) \
+  --auth-stay-signed-in-days=30 \
+  --auth-timeout-minutes=0 \
+  --rsession-path=/etc/rstudio/rsession.sh
+printf 'rserver exited' 1>&2
+```
+
+## Run RStudio server Slurm job {.smaller}
+
+1. Submit job to Slurm scheduler
+
+```{.bash filename="Terminal"}
+sbatch rstudio_server.sh
+```
+
+. . .
+
+2. Print captured usage info from job error file
+
+```{.bash filename="Terminal"}
+cat .cache/sbatch_logs/<job ID>_-_rstudio_server.err
+```
+
+Takes a while to build image file. Watch for changes to file with `wait tail -n 20 .cache/sbatch_logs/<job ID>_-_rstudio_server.err`
+
+. . .
+
+3. Open a new terminal session on your **local** machine -- NOT ISAAC-NG. Run the `ssh` command from the error file. Authenticate and leave the SSH session open.
+
+```{.bash filename="Terminal"}
+ssh -N -L 8787:<host>:<port> <user>@login.isaac.utk.edu
+```
+
+. . .
+
+4. Open browser window and connect to RStudio server URL: <http://localhost:8787/>
+
+Authenticate using the username and password listed in your error file.
+
+# Conclusion
+
+## Workshop goals -- How do we feel?
+
+* Learn to run software on ISAAC-NG using Apptainer containers
+* Run CLI software from Apptainer containers
+* Strategies to simplify container usage
+* Run containers from Docker images on ISAAC-NG
+* Provide resources for finding bioinformatics container images
+* Run and connect to containerized RStudio server on ISAAC-NG
+
+## When would you use containers? {.smaller}
+
+. . .
+
+Try out new version of software
+
+. . .
+
+Replace Conda
+
+* No more environment headaches
+* No need to setup channels properly
+* No more accidentally installing software into wrong environment
+* No more version clashes
+
+. . .
+
+Share scripts
+
+* If it works for you, it should work for your collaborators
+* If 1) the software is available in the container and 2) the file can be accessed in the container, the command should run.
+
+. . .
+
+Workflows/pipelines
+
+* Containers + atomized workflow steps are the perfect match
+
+# Final questions, comments, or suggestions?
+
+Reach out: <tfreem10@utk.edu>

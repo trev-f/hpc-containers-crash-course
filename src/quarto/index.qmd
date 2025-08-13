@@ -4,4 +4,8 @@ This is the home page for a 1-2 hour mini workshop that will provide a hands-on 
 
 ## Current materials
 
-[Dec. 16, 2024 -- Slides](slides/20241216-slides.qmd)
+[Aug. 14, 2025 -- HPSC: Using Containers Slides](slides/20250814-hpsc_workshop-slides.qmd)
+
+## Past materials
+
+[Dec. 16, 2024 -- Containers Mini Workshop Slides](slides/20241216-slides.qmd)

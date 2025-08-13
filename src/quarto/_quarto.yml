@@ -6,7 +6,21 @@ website:
   title: "HPC Containers Crash Course"
   navbar:
     left:
-      - href: index.qmd
-        text: Home
-      - href: slides/20241216-slides.qmd
-        text: 2024-12-16 -- Containers HPC Slides
+      - text: Home
+        href: index.qmd
+      - sidebar:slides
+    tools:
+      - icon: github
+        menu:
+          - text: Source Code
+            href: https://github.com/trev-f/hpc-containers-crash-course
+
+  sidebar:
+    - id: slides
+      title: "Slides"
+      style: "docked"
+      contents:
+        - text: "2025-08-14 -- HPSC: Using Containers"
+          href: slides/20250814-hpsc_workshop-slides.qmd
+        - text: 2024-12-16 -- Containers Mini Workshop
+          href: slides/20241216-slides.qmd
