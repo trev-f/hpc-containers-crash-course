@@ -159,7 +159,7 @@ ls -lh /usr/bin/apptainer /usr/bin/singularity
 Set Apptainer to cache images in scratch directory
 
 ```{.bash filename="~/.bashrc"}
-export APPTAINER_CACHE="${SCRATCHDIR}/.apptainer/cache"
+export APPTAINER_CACHEDIR="${SCRATCHDIR}/.apptainer/cache"
 ```
 
 Restart your shell session to load this environment variable
