@@ -115,7 +115,7 @@
     "href": "slides/20241216-slides.html#configure-apptainer-cache",
     "title": "Using Containerized Software on HPC for Bioinformatics",
     "section": "Configure Apptainer cache",
-    "text": "Configure Apptainer cache\nSet Apptainer to cache images in scratch directory\n\n\n~/.bashrc\n\nexport APPTAINER_CACHE=\"${SCRATCHDIR}/.apptainer/cache\"\n\nRestart your shell session to load this environment variable\n\n\nTerminal\n\nexec bash\n\n\n\n\n\n\n\n\n\nApptainer cache\n\n\nApptainer does some image management for us. When it fetches an image from a remote location, it caches those images to prevent repeatedly downloading them. By default, it uses $HOME/.apptainer/cache for its cache directory. Home directories on ISAAC-NG are rather small, and Apptainer images can be large, so it makes sense to store these in scratch.",
+    "text": "Configure Apptainer cache\nSet Apptainer to cache images in scratch directory\n\n\n~/.bashrc\n\nexport APPTAINER_CACHEDIR=\"${SCRATCHDIR}/.apptainer/cache\"\n\nRestart your shell session to load this environment variable\n\n\nTerminal\n\nexec bash\n\n\n\n\n\n\n\n\n\nApptainer cache\n\n\nApptainer does some image management for us. When it fetches an image from a remote location, it caches those images to prevent repeatedly downloading them. By default, it uses $HOME/.apptainer/cache for its cache directory. Home directories on ISAAC-NG are rather small, and Apptainer images can be large, so it makes sense to store these in scratch.",
     "crumbs": [
       "2024-12-16 -- Containers Mini Workshop"
     ]
