@@ -555,7 +555,7 @@
     "href": "slides/20250814-hpsc_workshop-slides.html#start-interactive-compute-session",
     "title": "HPSC: Using Containers",
     "section": "Start interactive compute session",
-    "text": "Start interactive compute session\nInteractive compute session allows us to work directly on a compute node.\n\n\nTerminal\n\nsrun \\\n  --account ACF-UTK0011 \\\n  --partition short \\\n  --qos short \\\n  --cpus-per-task 1 \\\n  --time 03:00:00 \\\n  --pty \\\n  /bin/bash -i",
+    "text": "Start interactive compute session\nInteractive compute session allows us to work directly on a compute node.\n\n\nTerminal\n\nsrun \\\n  --account ACF-UTK0011 \\\n  --partition short \\\n  --qos short \\\n  --cpus-per-task 1 \\\n  --pty \\\n  /bin/bash -i",
     "crumbs": [
       "2025-08-14 -- HPSC: Using Containers"
     ]
@@ -615,7 +615,7 @@
     "href": "slides/20250814-hpsc_workshop-slides.html#configure-apptainer-cache",
     "title": "HPSC: Using Containers",
     "section": "Configure Apptainer cache",
-    "text": "Configure Apptainer cache\n\n\n\n\n\n\n\nApptainer cache\n\n\nApptainer does some image management for us. When it fetches an image from a remote location, it caches those images to prevent repeatedly downloading them. By default, it uses $HOME/.apptainer/cache for its cache directory. Home directories on ISAAC-NG are rather small, and Apptainer images can be large, so it makes sense to store these in scratch.\n\n\n\n\n\nSet Apptainer to cache images in scratch directory\n\n\n~/.bashrc\n\nexport APPTAINER_CACHE=\"${SCRATCHDIR}/.apptainer/cache\"\n\nRestart your shell session to load this environment variable\n\n\nTerminal\n\nexec bash",
+    "text": "Configure Apptainer cache\n\n\n\n\n\n\n\nApptainer cache\n\n\nApptainer does some image management for us. When it fetches an image from a remote location, it caches those images to prevent repeatedly downloading them. By default, it uses $HOME/.apptainer/cache for its cache directory. Home directories on ISAAC-NG are rather small, and Apptainer images can be large, so it makes sense to store these in scratch.\n\n\n\n\n\nSet Apptainer to cache images in scratch directory\n\n\n~/.bashrc\n\nexport APPTAINER_CACHEDIR=\"${SCRATCHDIR}/.apptainer/cache\"\n\nRestart your shell session to load this environment variable\n\n\nTerminal\n\nexec bash",
     "crumbs": [
       "2025-08-14 -- HPSC: Using Containers"
     ]
